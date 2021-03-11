@@ -19,10 +19,11 @@ spriteFactory = (image) => {
 	return sprite
 }
 
-var ship = Object.assign(spriteFactory('ship.png'), {speed: 3});
+var ship = Object.assign(spriteFactory('ship.png'), {speed: 5});
 
 init = () => {
-	window.setTimeout(updateCanvas, 33);
+	updateState();
+	window.requestAnimationFrame(updateCanvas);
 }
 
 keyPressed = (event) => {
@@ -40,16 +41,21 @@ keyReleased = (event) => {
 }
 
 
-updateCanvas = () => {
+updateState = () => {
+	window.setTimeout(updateState, 33);
+
 	ship.y -= keyState.w ? ship.speed : 0;
 	ship.y += keyState.s ? ship.speed : 0;
 	ship.x -= keyState.a ? ship.speed : 0;
 	ship.x += keyState.d ? ship.speed : 0;
+}
 
+updateCanvas = () => {
+	window.requestAnimationFrame(updateCanvas);
+	
 	ctx = document.getElementById('test').getContext('2d');
 	ctx.clearRect(0, 0, 150, 150);
 	ctx.drawImage(ship.img, ship.x, ship.y)
-	window.setTimeout(updateCanvas, 33);
 }
 
 
