@@ -1,17 +1,26 @@
 var canvas;
 
 const keys = new Set();
-["w", "a", "s", "d", "W", "A", "S", "D"].forEach(item => keys.add(item));
+["w", "a", "s", "d", "W", "A", "S", "D", " "].forEach(item => keys.add(item));
 
 // Global key state, only updated by key events
 var keyState = {
 	w: false,
 	a: false,
 	s: false,
-	d: false
+	d: false,
+	" ": false
 }
 
 var stars = [];
+
+var missilePool = {
+	ready: [],
+	fired: [],
+	speed: 0,
+	cooldown: 0,
+	cooldownTime: 0
+};
 
 getRandomInt = (max) => {
 	return Math.ceil(Math.random() * Math.ceil(max));
@@ -39,6 +48,17 @@ populateStars = () => {
 	//console.log(stars);
 }
 
+populateMissilePool = (count=10, cooldownTime=10, image='missile.png', speed=8 ) => {
+	missilePool.cooldownTime = cooldownTime;
+	missilePool.speed = speed;
+	let i = 0;
+	for (i = 0; i < count; i++) {
+		let missile = Object.assign({img: new Image()}, Sprite);
+		missile.img.src = image;
+		missilePool.ready.push(missile)
+	}
+}
+
 drawStars = (ctx) => {
 	ctx.fillStyle = "yellow";
 	let i = 0;
@@ -48,6 +68,10 @@ drawStars = (ctx) => {
 		ctx.fillRect(0, 0, stars[i].sz, stars[i].sz);
 		ctx.restore();
 	}
+}
+
+drawMissiles = (ctx) => {
+	missilePool.fired.forEach(missile => ctx.drawImage(missile.img, missile.x, missile.y));
 }
 
 
@@ -64,6 +88,7 @@ init = () => {
 	ship.x = canvas.width / 2 - ship.img.width / 2;
 	ship.y = canvas.height - ship.img.height;
 	populateStars();
+	populateMissilePool();
 	updateState();
 	updateCanvas();
 }
@@ -72,6 +97,7 @@ keyPressed = (event) => {
 	if (keys.has(event.key)) {
 		keyState[event.key.toLowerCase()] = true;
 	}
+	console.log(keyState);
 }
 
 keyReleased = (event) => {
@@ -107,9 +133,27 @@ updateShip = () => {
 	}
 }
 
+updateMissiles = () => {
+	if (missilePool.cooldown > 0) {
+		missilePool.cooldown -= 1;
+	}
+	if (keyState[" "] && missilePool.cooldown == 0 && missilePool.ready.length > 0) {
+		missilePool.ready[0].x = ship.x + Math.floor(ship.img.width / 2) - Math.floor(missilePool.ready[0].img.width / 2);
+		missilePool.ready[0].y = ship.y;
+		missilePool.fired.push(missilePool.ready.shift());
+		missilePool.cooldown = missilePool.cooldownTime;
+		console.log(missilePool);
+	}
+	missilePool.fired.forEach(missile => missile.y -= missilePool.speed);
+	if (missilePool.fired.length > 0 && missilePool.fired[0].y < -Math.floor(missilePool.fired[0].img.height / 2)) {
+		missilePool.ready.push(missilePool.fired.shift());
+	}
+}
+
 updateState = () => {
 	window.setTimeout(updateState, 33);
 	updateStars();
+	updateMissiles();
 	updateShip();
 }
 
@@ -120,6 +164,7 @@ updateCanvas = () => {
 	ctx.fillStyle = "black";
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	drawStars(ctx);
+	drawMissiles(ctx);
 	ctx.drawImage(ship.img, ship.x, ship.y);
 }
 
