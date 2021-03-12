@@ -1,7 +1,7 @@
 var canvas;
 
 const keys = new Set();
-["w", "a", "s", "d", "W", "A", "S", "D", " "].forEach(item => keys.add(item));
+["w", "a", "s", "d", "b", "W", "A", "S", "D", "B", " "].forEach(item => keys.add(item));
 
 // Global key state, only updated by key events
 var keyState = {
@@ -22,14 +22,21 @@ var missilePool = {
 	cooldownTime: 0
 };
 
+var bomb = null;
+
 getRandomInt = (max) => {
 	return Math.ceil(Math.random() * Math.ceil(max));
+}
+
+getDist2 = (x1, y1, x2, y2) => {
+	return (Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
 }
 
 const Sprite = {
 	x: 0,
 	y: 0,
 }
+
 
 starFactory = (height=-5) => {
 	return {
@@ -72,6 +79,17 @@ drawStars = (ctx) => {
 
 drawMissiles = (ctx) => {
 	missilePool.fired.forEach(missile => ctx.drawImage(missile.img, missile.x, missile.y));
+}
+
+drawBomb = (ctx) => {
+	if (bomb) {
+		ctx.strokeStyle ="blue";
+		ctx.lineWidth = 3;
+		ctx.beginPath();
+		ctx.arc(bomb.x, bomb.y, bomb.r, 0, 2 * Math.PI);
+		ctx.stroke();
+	}
+
 }
 
 
@@ -150,10 +168,29 @@ updateMissiles = () => {
 	}
 }
 
+updateBomb = () => {
+	if (keyState.b && !bomb) {
+		bomb = {
+			x: ship.x + Math.floor(ship.img.width / 2),
+			y: ship.y + Math.floor(ship.img.height / 2),
+			r: 0
+		}
+		bomb.dist2 = Math.max(getDist2(bomb.x, bomb.y, 0, 0,), getDist2(bomb.x, bomb.y, canvas.width, 0), getDist2(bomb.x, bomb.y, 0, canvas.height), getDist2(bomb.x, bomb.y, canvas.width, canvas.height));
+		console.log(bomb)
+	}
+	if (bomb) {
+		bomb.r += 5;
+		if (Math.pow(bomb.r, 2) > bomb.dist2) {
+			bomb = null;
+		}
+	}
+}
+
 updateState = () => {
 	window.setTimeout(updateState, 33);
 	updateStars();
 	updateMissiles();
+	updateBomb();
 	updateShip();
 }
 
@@ -165,6 +202,7 @@ updateCanvas = () => {
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	drawStars(ctx);
 	drawMissiles(ctx);
+	drawBomb(ctx);
 	ctx.drawImage(ship.img, ship.x, ship.y);
 }
 
