@@ -1,4 +1,5 @@
 var canvas;
+const root2 = Math.sqrt(2);
 
 const keys = new Set();
 ["w", "a", "s", "d", "b", "W", "A", "S", "D", "B", " "].forEach(item => keys.add(item));
@@ -133,10 +134,26 @@ updateStars = () => {
 }
 
 updateShip = () => {
-	ship.y -= keyState.w ? ship.speed : 0;
-	ship.y += keyState.s ? ship.speed : 0;
-	ship.x -= keyState.a ? ship.speed : 0;
-	ship.x += keyState.d ? ship.speed : 0;
+	ship.y -= keyState.w && !keyState.a && !keyState.d ? ship.speed : 0;
+	ship.y += keyState.s && !keyState.a && !keyState.d ? ship.speed : 0;
+	ship.x -= keyState.a && !keyState.w && !keyState.s ? ship.speed : 0;
+	ship.x += keyState.d && !keyState.w && !keyState.s ? ship.speed : 0;
+	if (keyState.w && keyState.a) {
+		ship.x -= Math.ceil(ship.speed / root2);
+		ship.y -= Math.ceil(ship.speed / root2);
+	}
+	if (keyState.a && keyState.s) {
+		ship.x -= Math.ceil(ship.speed / root2);
+		ship.y += Math.ceil(ship.speed / root2);
+	}
+	if (keyState.s && keyState.d) {
+		ship.x += Math.ceil(ship.speed / root2);
+		ship.y += Math.ceil(ship.speed / root2);
+	}
+	if (keyState.w && keyState.d) {
+		ship.x += Math.ceil(ship.speed / root2);
+		ship.y -= Math.ceil(ship.speed / root2);
+	}
 	if (ship.x < 0) {
 		ship.x = 0;
 	}
