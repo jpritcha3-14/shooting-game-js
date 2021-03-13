@@ -3,6 +3,7 @@
 //~~~~~~~~~~~~~~~~~~~~~//
 
 var canvas;
+var waveData;
 var bomb;
 var ship;
 
@@ -29,10 +30,45 @@ var missilePool = {
 	cooldownTime: 0
 };
 
+var alienPools = {
+	onCanvas: [],
+};
+
 const Sprite = {
 	x: 0,
 	y: 0,
 };
+
+var Aliens = {
+	Simple: {
+		type: "Simple",
+		x: 0,
+		y: 0,
+		origin: {
+			x: 0,
+			y: 0
+		},
+		update: function () {
+			this.y += this.speed;
+		},
+		speed: 3,
+		src: "red.png"
+	},
+	Siney: {
+		type: "Siney",
+		x: 0,
+		y: 0,
+		origin: {
+			x: 0,
+			y: 0
+		},
+		update: function () {
+			this.y += this.speed;
+		},
+		speed: 3,
+		src: "red.png"
+	}
+}
 
 //~~~~~~~~~~~~~~~~~~~//
 // Support Functions //
@@ -46,6 +82,12 @@ getRandomInt = (max) => {
 // Distance metric between 2 points
 getDist2 = (x1, y1, x2, y2) => {
 	return (Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
+}
+
+// Random choice from an array
+choose = (choices) => {
+  let index = Math.floor(Math.random() * choices.length);
+  return choices[index];
 }
 
 spriteFactory = (image) => {
@@ -62,12 +104,19 @@ starFactory = (height=-5) => {
 	};
 }
 
+alienFactory = (type=Aliens.Simple) => {
+	let alien = Object.assign({}, type, {img: new Image()});
+	alien.img.src = alien.src;
+	console.log(alien);
+	return alien;
+}
+
 populateStars = () => {
 	let i = 0;
 	for (i = -5; i < canvas.height; i += 10) {
 		stars.push(starFactory(i));
 	}
-	stars.reverse()
+	stars.reverse();
 }
 
 populateMissilePool = (count=10, cooldownTime=10, image='missile.png', speed=8 ) => {
@@ -79,6 +128,16 @@ populateMissilePool = (count=10, cooldownTime=10, image='missile.png', speed=8 )
 		missile.img.src = image;
 		missilePool.ready.push(missile)
 	}
+}
+
+populateAlientPools = (types, numeach=5) => {
+	types.forEach(type => {
+		alienPools[type] = [];
+		let i = 0;
+		for (i = 0; i < numeach; i++) {
+			alienPools[type].push(alienFactory(Aliens[type]));
+		}
+	});
 }
 
 //~~~~~~~~~~~~~~~~//
@@ -109,6 +168,10 @@ drawBomb = (ctx) => {
 		ctx.stroke();
 	}
 
+}
+
+drawAliens = (ctx) => {
+	alienPools.onCanvas.forEach(alien => ctx.drawImage(alien.img, alien.x, alien.y));
 }
 
 //~~~~~~~~~~~~~~~~~~//
@@ -209,6 +272,56 @@ updateShip = () => {
 	}
 }
 
+updateAliens = () => {
+	
+	if (waveData.spacingTimeout > 0) {
+		waveData.spacingTimeout -= 1;
+	} else {
+		let typesLeft = [];
+		let newType;
+		waveData.spacingTimeout = waveData.spacing[waveData.curWave];
+		// Create array of types with remaining values > 0;
+		for (t in waveData.leftInCurWave) {
+			if (waveData.leftInCurWave[t] > 0) {
+				typesLeft.push(t);
+			} 
+		}
+
+		// If empty, move to next wave
+		if (typesLeft.length == 0) {
+			waveData.curWave = 0; // CHANGE THIS TO INCREMENT WHEN NEW WAVES/ALIENS IMPLEMENTED!!!
+			waveData.leftInCurWave = Object.create(waveData.waves[waveData.curWave]);
+			return;
+		}
+
+		// Choose a type at random, initialize from pool, decrement leftInCurWave for type
+		newType = choose(typesLeft);
+		if (alienPools[newType].length > 0) {
+			let curAlien = alienPools[newType][0];
+			curAlien.origin.x = getRandomInt(canvas.width - curAlien.img.width);
+			curAlien.origin.y = -curAlien.img.height;
+			curAlien.x = curAlien.origin.x;
+			curAlien.y = curAlien.origin.y;
+			alienPools.onCanvas.push(alienPools[newType].shift());
+			waveData.leftInCurWave[newType] -= 1;
+		}
+
+	}
+
+	// Update alien positions
+	alienPools.onCanvas.forEach((alien, index) => {
+		alien.update();
+	});
+
+	// Sort the onCanvas pool by y position, then pop any aliens off canvas back to their waiting pools 
+	alienPools.onCanvas.sort((a, b) => (a.y > b.y) ? -1 : 1);
+
+	while (alienPools.onCanvas.length > 0 && alienPools.onCanvas[0].y > canvas.height) {
+		alienPools[alienPools.onCanvas[0].type].push(alienPools.onCanvas.shift());
+	}
+
+}
+
 //~~~~~~~~~~~~//
 // Main Logic //
 //~~~~~~~~~~~~//
@@ -233,8 +346,17 @@ init = () => {
 	ship.y = canvas.height - ship.img.height;
 	populateStars();
 	populateMissilePool();
-	updateState();
-	updateCanvas();
+	$.getJSON("waveData.json").done(function (data) {
+		waveData = data;
+		populateAlientPools(waveData.types);
+		waveData.curWave = 0;
+		waveData.spacingTimeout = 0;
+		waveData.leftInCurWave = Object.create(waveData.waves[0]);
+		console.log(alienPools);
+		console.log(waveData);
+		updateState();
+		updateCanvas();
+	});
 }
 
 // Main Update Function, called at regular interval
@@ -245,6 +367,7 @@ updateState = () => {
 	updateMissiles();
 	updateBomb();
 	updateShip();
+	updateAliens();
 }
 
 // Main Draw Function, tied to browser refresh rate
@@ -257,6 +380,7 @@ updateCanvas = () => {
 	drawStars(ctx);
 	drawMissiles(ctx);
 	drawBomb(ctx);
+	drawAliens(ctx);
 	ctx.drawImage(ship.img, ship.x, ship.y);
 }
 

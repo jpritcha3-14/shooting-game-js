@@ -1,0 +1,5 @@
+{
+	"types": ["Simple"],
+	"waves": [{"Simple": 5}],
+	"spacing": [20]
+}
