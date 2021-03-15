@@ -43,46 +43,51 @@ const Sprite = {
 // Between 1 and Max
 getRandomInt = (max) => {
 	return Math.ceil(Math.random() * Math.ceil(max));
-}
+};
+
+var BaseAlien = {
+	x: 0,
+	y: 0,
+	originX: 0,
+	originY: 0,
+	initialize: function () {
+		this.originX = getRandomInt(canvas.width - this.img.width);
+		this.originY = -this.img.height;
+		this.x = this.originX;
+		this.y = this.originY;
+		this.customInitialize();
+	},
+	customInitialize: () => { return; }
+
+};
 
 var Aliens = {
-	Simple: {
+	Simple: Object.assign({}, BaseAlien, {
 		type: "Simple",
-		x: 0,
-		y: 0,
-		originX: 0,
-		originY: 0,
 		update: function () {
 			this.y += this.speed;
 		},
-		initialize: function () {
-			return;
-		},
 		speed: 3,
 		src: "red.png"
-	},
-	Siney: {
+	}),
+	Siney: Object.assign({}, BaseAlien, {
 		type: "Siney",
-		x: 0,
-		y: 0,
 		magnitude: 0,
 		phase: 0,
 		frequency: 0,
-		originX: 0,
-		originY: 0,
 		update: function () {
 			this.y += this.speed;
 			this.x = Math.floor(this.originX + this.magnitude * Math.sin(this.y/this.frequency + this.phase));
 		},
-		initialize: function () {
+		customInitialize: function () {
 			this.magnitude = 30 + getRandomInt(50);
 			this.phase = 6 * Math.random();
 			this.frequency = 10 + getRandomInt(30);
 		},
 		speed: 3,
 		src: "blue.png"
-	}
-}
+	})
+};
 
 //~~~~~~~~~~~~~~~~~~~//
 // Support Functions //
@@ -315,10 +320,11 @@ updateAliens = () => {
 		newType = choose(canSpawn);
 		if (newType && alienPools[newType].length > 0) {
 			let curAlien = alienPools[newType][0];
-			curAlien.originX = getRandomInt(canvas.width - curAlien.img.width);
-			curAlien.originY = -curAlien.img.height;
-			curAlien.x = curAlien.originX;
-			curAlien.y = curAlien.originY;
+			//curAlien.originX = getRandomInt(canvas.width - curAlien.img.width);
+			//curAlien.originY = -curAlien.img.height;
+			//curAlien.x = curAlien.originX;
+			//curAlien.y = curAlien.originY;
+			curAlien.initialize();
 			alienPools.onCanvas.push(alienPools[newType].shift());
 			//waveData.leftInCurWave[newType] -= 1;
 			alienPools.onCanvasCount[newType] += 1;
