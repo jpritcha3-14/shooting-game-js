@@ -50,12 +50,13 @@ var Aliens = {
 		type: "Simple",
 		x: 0,
 		y: 0,
-		origin: {
-			x: 0,
-			y: 0
-		},
+		originX: 0,
+		originY: 0,
 		update: function () {
 			this.y += this.speed;
+		},
+		initialize: function () {
+			return;
 		},
 		speed: 3,
 		src: "red.png"
@@ -64,14 +65,15 @@ var Aliens = {
 		type: "Siney",
 		x: 0,
 		y: 0,
-		magnitude: 30 + getRandomInt(50),
-		origin: {
-			x: 0,
-			y: 0
-		},
+		magnitude: 0,
+		originX: 0,
+		originY: 0,
 		update: function () {
 			this.y += this.speed;
-			this.x = Math.floor(this.origin.x + this.magnitude * Math.sin(this.y/10));
+			this.x = Math.floor(this.originX + this.magnitude * Math.sin(this.y/10));
+		},
+		initialize: function () {
+			this.magnitude = 30 + getRandomInt(50);
 		},
 		speed: 3,
 		src: "blue.png"
@@ -111,6 +113,7 @@ starFactory = (height=-5) => {
 alienFactory = (type) => {
 	let alien = Object.assign({}, type, {img: new Image()});
 	alien.img.src = alien.src;
+	alien.initialize();
 	console.log(alien);
 	return alien;
 }
@@ -308,10 +311,11 @@ updateAliens = () => {
 		newType = choose(canSpawn);
 		if (newType && alienPools[newType].length > 0) {
 			let curAlien = alienPools[newType][0];
-			curAlien.origin.x = getRandomInt(canvas.width - curAlien.img.width);
-			curAlien.origin.y = -curAlien.img.height;
-			curAlien.x = curAlien.origin.x;
-			curAlien.y = curAlien.origin.y;
+			console.log(curAlien);
+			curAlien.originX = getRandomInt(canvas.width - curAlien.img.width);
+			curAlien.originY = -curAlien.img.height;
+			curAlien.x = curAlien.originX;
+			curAlien.y = curAlien.originY;
 			alienPools.onCanvas.push(alienPools[newType].shift());
 			//waveData.leftInCurWave[newType] -= 1;
 			alienPools.onCanvasCount[newType] += 1;
