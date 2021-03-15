@@ -32,12 +32,18 @@ var missilePool = {
 
 var alienPools = {
 	onCanvas: [],
+	onCanvasCount: {}
 };
 
 const Sprite = {
 	x: 0,
 	y: 0,
 };
+
+// Between 1 and Max
+getRandomInt = (max) => {
+	return Math.ceil(Math.random() * Math.ceil(max));
+}
 
 var Aliens = {
 	Simple: {
@@ -58,15 +64,17 @@ var Aliens = {
 		type: "Siney",
 		x: 0,
 		y: 0,
+		magnitude: 30 + getRandomInt(50),
 		origin: {
 			x: 0,
 			y: 0
 		},
 		update: function () {
 			this.y += this.speed;
+			this.x = Math.floor(this.origin.x + this.magnitude * Math.sin(this.y/10));
 		},
 		speed: 3,
-		src: "red.png"
+		src: "blue.png"
 	}
 }
 
@@ -74,10 +82,6 @@ var Aliens = {
 // Support Functions //
 //~~~~~~~~~~~~~~~~~~~//
 
-// Between 1 and Max
-getRandomInt = (max) => {
-	return Math.ceil(Math.random() * Math.ceil(max));
-}
 
 // Distance metric between 2 points
 getDist2 = (x1, y1, x2, y2) => {
@@ -104,7 +108,7 @@ starFactory = (height=-5) => {
 	};
 }
 
-alienFactory = (type=Aliens.Simple) => {
+alienFactory = (type) => {
 	let alien = Object.assign({}, type, {img: new Image()});
 	alien.img.src = alien.src;
 	console.log(alien);
@@ -133,6 +137,7 @@ populateMissilePool = (count=10, cooldownTime=10, image='missile.png', speed=8 )
 populateAlientPools = (types, numeach=5) => {
 	types.forEach(type => {
 		alienPools[type] = [];
+		alienPools.onCanvasCount[type] = 0;
 		let i = 0;
 		for (i = 0; i < numeach; i++) {
 			alienPools[type].push(alienFactory(Aliens[type]));
@@ -274,16 +279,21 @@ updateShip = () => {
 
 updateAliens = () => {
 	
+	// Determine whether to add a new alien to the canvas
 	if (waveData.spacingTimeout > 0) {
 		waveData.spacingTimeout -= 1;
 	} else {
 		let typesLeft = [];
+		let canSpawn = [];
 		let newType;
 		waveData.spacingTimeout = waveData.spacing[waveData.curWave];
 		// Create array of types with remaining values > 0;
 		for (t in waveData.leftInCurWave) {
-			if (waveData.leftInCurWave[t] > 0) {
+			if (waveData.leftInCurWave[t]> 0) {
 				typesLeft.push(t);
+			} 
+			if (waveData.leftInCurWave[t] - alienPools.onCanvasCount[t] > 0) {
+				canSpawn.push(t);
 			} 
 		}
 
@@ -294,16 +304,17 @@ updateAliens = () => {
 			return;
 		}
 
-		// Choose a type at random, initialize from pool, decrement leftInCurWave for type
-		newType = choose(typesLeft);
-		if (alienPools[newType].length > 0) {
+		// Choose a spawnable type at random, initialize from pool, add to on canvas count for type 
+		newType = choose(canSpawn);
+		if (newType && alienPools[newType].length > 0) {
 			let curAlien = alienPools[newType][0];
 			curAlien.origin.x = getRandomInt(canvas.width - curAlien.img.width);
 			curAlien.origin.y = -curAlien.img.height;
 			curAlien.x = curAlien.origin.x;
 			curAlien.y = curAlien.origin.y;
 			alienPools.onCanvas.push(alienPools[newType].shift());
-			waveData.leftInCurWave[newType] -= 1;
+			//waveData.leftInCurWave[newType] -= 1;
+			alienPools.onCanvasCount[newType] += 1;
 		}
 
 	}
@@ -317,6 +328,7 @@ updateAliens = () => {
 	alienPools.onCanvas.sort((a, b) => (a.y > b.y) ? -1 : 1);
 
 	while (alienPools.onCanvas.length > 0 && alienPools.onCanvas[0].y > canvas.height) {
+		alienPools.onCanvasCount[alienPools.onCanvas[0].type] -= 1;
 		alienPools[alienPools.onCanvas[0].type].push(alienPools.onCanvas.shift());
 	}
 
