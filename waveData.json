@@ -1,5 +1,5 @@
 {
 	"types": ["Simple", "Siney"],
-	"waves": [{"Siney":4}],
+	"waves": [{"Simple":5,"Siney":4}],
 	"spacing": [20]
 }

@@ -66,14 +66,18 @@ var Aliens = {
 		x: 0,
 		y: 0,
 		magnitude: 0,
+		phase: 0,
+		frequency: 0,
 		originX: 0,
 		originY: 0,
 		update: function () {
 			this.y += this.speed;
-			this.x = Math.floor(this.originX + this.magnitude * Math.sin(this.y/10));
+			this.x = Math.floor(this.originX + this.magnitude * Math.sin(this.y/this.frequency + this.phase));
 		},
 		initialize: function () {
 			this.magnitude = 30 + getRandomInt(50);
+			this.phase = 6 * Math.random();
+			this.frequency = 10 + getRandomInt(30);
 		},
 		speed: 3,
 		src: "blue.png"
@@ -311,7 +315,6 @@ updateAliens = () => {
 		newType = choose(canSpawn);
 		if (newType && alienPools[newType].length > 0) {
 			let curAlien = alienPools[newType][0];
-			console.log(curAlien);
 			curAlien.originX = getRandomInt(canvas.width - curAlien.img.width);
 			curAlien.originY = -curAlien.img.height;
 			curAlien.x = curAlien.originX;
