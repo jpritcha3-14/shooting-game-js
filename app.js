@@ -51,12 +51,11 @@ getRandomInt = (max) => {
 };
 
 // Rectangular collision
-detectCollision = (a, b) => {
-	console.log("collision!!!");
-	return (a.x > b.x - a.img.width 
-		&& a.x < b.x + b.img.width 
-		&& a.y > b.y - a.img.height
-		&& a.y < b.y + b.img.height);
+detectCollision = (a, b, wiggle=0) => {
+	return (a.x > b.x - a.img.width + wiggle
+		&& a.x < b.x + b.img.width - wiggle 
+		&& a.y > b.y - a.img.height + wiggle
+		&& a.y < b.y + b.img.height - wiggle);
 }
 
 var BaseAlien = {
@@ -64,11 +63,13 @@ var BaseAlien = {
 	y: 0,
 	originX: 0,
 	originY: 0,
+	exploded: false,
 	initialize: function () {
 		this.originX = getRandomInt(canvas.width - this.img.width);
 		this.originY = -this.img.height;
 		this.x = this.originX;
 		this.y = this.originY;
+		this.exploded = false;
 		this.customInitialize();
 	},
 	customInitialize: () => { return; }
@@ -156,6 +157,7 @@ populateMissilePool = (count=10, cooldownTime=10, image='missile.png', speed=8 )
 	for (i = 0; i < count; i++) {
 		let missile = Object.assign({img: new Image()}, Sprite);
 		missile.img.src = image;
+		missile.exploded = false;
 		missilePool.ready.push(missile)
 	}
 }
@@ -255,6 +257,7 @@ updateMissiles = () => {
 	if (keyState[" "] && missilePool.cooldown == 0 && ship.alive && missilePool.ready.length > 0) {
 		missilePool.ready[0].x = ship.x + Math.floor(ship.img.width / 2) - Math.floor(missilePool.ready[0].img.width / 2);
 		missilePool.ready[0].y = ship.y;
+		missilePool.ready[0].exploded = false;
 		missilePool.fired.push(missilePool.ready.shift());
 		missilePool.cooldown = missilePool.cooldownTime;
 		console.log(missilePool);
@@ -356,7 +359,7 @@ updateAliens = () => {
 		// If empty, move to next wave
 		if (typesLeft.length == 0) {
 			waveData.curWave = 0; // CHANGE THIS TO INCREMENT WHEN NEW WAVES/ALIENS IMPLEMENTED!!!
-			waveData.leftInCurWave = Object.create(waveData.waves[waveData.curWave]);
+			waveData.leftInCurWave = Object.assign({}, waveData.waves[waveData.curWave]);
 			return;
 		}
 
@@ -366,7 +369,6 @@ updateAliens = () => {
 			let curAlien = alienPools[newType][0];
 			curAlien.initialize();
 			alienPools.onCanvas.push(alienPools[newType].shift());
-			//waveData.leftInCurWave[newType] -= 1;
 			alienPools.onCanvasCount[newType] += 1;
 		}
 
@@ -397,8 +399,7 @@ updateExplosions = () => {
 detectCollisions = () => {
 	// Between ship and aliens
 	alienPools.onCanvas.forEach(alien => {
-		if (ship.alive && detectCollision(ship, alien)) {
-			console.log("collision!!!!");
+		if (ship.alive && detectCollision(ship, alien, wiggle=3)) {
 			ship.alive = false;
 			if (explosionPool.queue.length > 0) {
 				let explosion = explosionPool.queue[0];
@@ -409,6 +410,34 @@ detectCollisions = () => {
 			} 
 		}
 	});
+
+	// Between aliens and missiles
+	if (alienPools.onCanvas.length == 0 || missilePool.fired.length == 0) { return; }
+	alienPools.onCanvas.forEach(a => {
+		missilePool.fired.forEach(m => {
+			if (detectCollision(a, m)) {
+				a.exploded = true;
+				m.exploded = true;
+
+				let explosion = explosionPool.queue[0];
+				explosion.x = a.x;
+				explosion.y = a.y;
+				explosion.ttl = explosion.life;
+				explosionPool.onCanvas.push(explosionPool.queue.shift());
+			}	
+		});
+	});
+	alienPools.onCanvas.sort(function(x,y) { return (x.exploded === y.exploded) ? 0 : x.exploded ? -1 : 1 });
+	missilePool.fired.sort(function(x,y) { return (x.exploded === y.exploded) ? 0 : x.exploded ? -1 : 1 });
+	while (alienPools.onCanvas.length > 0 && alienPools.onCanvas[0].exploded) {
+		let alienType = alienPools.onCanvas[0].type;
+		waveData.leftInCurWave[alienType] -= 1;
+		alienPools.onCanvasCount[alienType] -= 1;
+		alienPools[alienType].push(alienPools.onCanvas.shift());
+	}
+	while (missilePool.fired.length > 0 && missilePool.fired[0].exploded) {
+		missilePool.ready.push(missilePool.fired.shift());
+	}
 }
 
 //~~~~~~~~~~~~//
@@ -430,9 +459,6 @@ keyReleased = (event) => {
 
 init = () => {
 	canvas = document.getElementById('gameArea');
-	//ship = Object.assign(spriteFactory('ship.png'), {speed: 5});
-	//ship.x = canvas.width / 2 - ship.img.width / 2;
-	//ship.y = canvas.height - ship.img.height;
 	initializeShip();
 	populateStars();
 	populateMissilePool();
@@ -442,7 +468,7 @@ init = () => {
 		populateAlientPools(waveData.types);
 		waveData.curWave = 0;
 		waveData.spacingTimeout = 0;
-		waveData.leftInCurWave = Object.create(waveData.waves[0]);
+		waveData.leftInCurWave = Object.assign({}, waveData.waves[0]);
 		console.log(alienPools);
 		console.log(waveData);
 		updateState();
