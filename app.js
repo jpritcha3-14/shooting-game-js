@@ -30,6 +30,11 @@ var missilePool = {
 	cooldownTime: 0
 };
 
+var explosionPool = {
+	onCanvas: [],
+	queue: []
+};
+
 var alienPools = {
 	onCanvas: [],
 	onCanvasCount: {}
@@ -44,6 +49,15 @@ const Sprite = {
 getRandomInt = (max) => {
 	return Math.ceil(Math.random() * Math.ceil(max));
 };
+
+// Rectangular collision
+detectCollision = (a, b) => {
+	console.log("collision!!!");
+	return (a.x > b.x - a.img.width 
+		&& a.x < b.x + b.img.width 
+		&& a.y > b.y - a.img.height
+		&& a.y < b.y + b.img.height);
+}
 
 var BaseAlien = {
 	x: 0,
@@ -157,6 +171,23 @@ populateAlientPools = (types, numeach=5) => {
 	});
 }
 
+populateExplosionPool = (num=10, img='explosion.png', life=10) => {
+	let i = 0;
+	for (i = 0; i < num; i++) {
+		let explosion = Object.assign({}, {img: new Image()}, Sprite);
+		explosion.life = 10;
+		explosion.ttl = 0;
+		explosion.img.src = img;
+		explosionPool.queue.push(explosion)
+	}
+}
+
+initializeShip = () => {
+	ship = Object.assign(spriteFactory('ship.png'), {speed: 5, alive: true});
+	ship.x = canvas.width / 2 - ship.img.width / 2;
+	ship.y = canvas.height - ship.img.height;
+}
+
 //~~~~~~~~~~~~~~~~//
 // Draw Functions //
 //~~~~~~~~~~~~~~~~//
@@ -191,6 +222,16 @@ drawAliens = (ctx) => {
 	alienPools.onCanvas.forEach(alien => ctx.drawImage(alien.img, alien.x, alien.y));
 }
 
+drawExplosions = (ctx) => {
+	explosionPool.onCanvas.forEach(explosion => ctx.drawImage(explosion.img, explosion.x, explosion.y));
+}
+
+drawShip = (ctx) => {
+	if (ship.alive) {
+		ctx.drawImage(ship.img, ship.x, ship.y);
+	}
+}
+
 //~~~~~~~~~~~~~~~~~~//
 // Update Functions //
 //~~~~~~~~~~~~~~~~~~//
@@ -211,7 +252,7 @@ updateMissiles = () => {
 	}
 
 	// Launch Missile
-	if (keyState[" "] && missilePool.cooldown == 0 && missilePool.ready.length > 0) {
+	if (keyState[" "] && missilePool.cooldown == 0 && ship.alive && missilePool.ready.length > 0) {
 		missilePool.ready[0].x = ship.x + Math.floor(ship.img.width / 2) - Math.floor(missilePool.ready[0].img.width / 2);
 		missilePool.ready[0].y = ship.y;
 		missilePool.fired.push(missilePool.ready.shift());
@@ -230,7 +271,7 @@ updateMissiles = () => {
 
 updateBomb = () => {
 	// Initialize bomb
-	if (keyState.b && !bomb) {
+	if (keyState.b && !bomb && ship.alive) {
 		bomb = {
 			x: ship.x + Math.floor(ship.img.width / 2),
 			y: ship.y + Math.floor(ship.img.height / 2),
@@ -250,6 +291,9 @@ updateBomb = () => {
 }
 
 updateShip = () => {
+	if (!ship.alive) {
+		return;
+	}
 	// Cardinal Directions
 	ship.y -= keyState.w && !keyState.a && !keyState.d ? ship.speed : 0;
 	ship.y += keyState.s && !keyState.a && !keyState.d ? ship.speed : 0;
@@ -320,10 +364,6 @@ updateAliens = () => {
 		newType = choose(canSpawn);
 		if (newType && alienPools[newType].length > 0) {
 			let curAlien = alienPools[newType][0];
-			//curAlien.originX = getRandomInt(canvas.width - curAlien.img.width);
-			//curAlien.originY = -curAlien.img.height;
-			//curAlien.x = curAlien.originX;
-			//curAlien.y = curAlien.originY;
 			curAlien.initialize();
 			alienPools.onCanvas.push(alienPools[newType].shift());
 			//waveData.leftInCurWave[newType] -= 1;
@@ -347,6 +387,30 @@ updateAliens = () => {
 
 }
 
+updateExplosions = () => {
+	explosionPool.onCanvas.forEach(explosion => {explosion.ttl -= 1});
+	while (explosionPool.onCanvas.length > 0 && explosionPool.onCanvas[0].ttl <= 0) {
+		explosionPool.queue.push(explosionPool.onCanvas.shift());
+	}
+}
+
+detectCollisions = () => {
+	// Between ship and aliens
+	alienPools.onCanvas.forEach(alien => {
+		if (ship.alive && detectCollision(ship, alien)) {
+			console.log("collision!!!!");
+			ship.alive = false;
+			if (explosionPool.queue.length > 0) {
+				let explosion = explosionPool.queue[0];
+				explosion.x = ship.x;
+				explosion.y = ship.y;
+				explosion.ttl = explosion.life;
+				explosionPool.onCanvas.push(explosionPool.queue.shift());
+			} 
+		}
+	});
+}
+
 //~~~~~~~~~~~~//
 // Main Logic //
 //~~~~~~~~~~~~//
@@ -366,11 +430,13 @@ keyReleased = (event) => {
 
 init = () => {
 	canvas = document.getElementById('gameArea');
-	ship = Object.assign(spriteFactory('ship.png'), {speed: 5});
-	ship.x = canvas.width / 2 - ship.img.width / 2;
-	ship.y = canvas.height - ship.img.height;
+	//ship = Object.assign(spriteFactory('ship.png'), {speed: 5});
+	//ship.x = canvas.width / 2 - ship.img.width / 2;
+	//ship.y = canvas.height - ship.img.height;
+	initializeShip();
 	populateStars();
 	populateMissilePool();
+	populateExplosionPool();
 	$.getJSON("waveData.json").done(function (data) {
 		waveData = data;
 		populateAlientPools(waveData.types);
@@ -391,8 +457,10 @@ updateState = () => {
 	updateStars();
 	updateMissiles();
 	updateBomb();
-	updateShip();
 	updateAliens();
+	updateShip();
+	detectCollisions();
+	updateExplosions();
 }
 
 // Main Draw Function, tied to browser refresh rate
@@ -406,7 +474,8 @@ updateCanvas = () => {
 	drawMissiles(ctx);
 	drawBomb(ctx);
 	drawAliens(ctx);
-	ctx.drawImage(ship.img, ship.x, ship.y);
+	drawShip(ctx);
+	drawExplosions(ctx);
 }
 
 window.onload = init;
