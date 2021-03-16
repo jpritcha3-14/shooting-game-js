@@ -2,7 +2,7 @@
 // Global Declarations //
 //~~~~~~~~~~~~~~~~~~~~~//
 
-var canvas;
+var canvas = {width: 0, height:0};
 var waveData;
 var bomb;
 var ship;
@@ -58,11 +58,18 @@ detectCollision = (a, b, wiggle=0) => {
 		&& a.y < b.y + b.img.height - wiggle);
 }
 
+// Random choice from an array
+choose = (choices) => {
+  let index = Math.floor(Math.random() * choices.length);
+  return choices[index];
+}
+
 var BaseAlien = {
 	x: 0,
 	y: 0,
 	originX: 0,
 	originY: 0,
+	speed: 3,
 	exploded: false,
 	initialize: function () {
 		this.originX = getRandomInt(canvas.width - this.img.width);
@@ -71,6 +78,9 @@ var BaseAlien = {
 		this.y = this.originY;
 		this.exploded = false;
 		this.customInitialize();
+	},
+	outOfBounds: function() {
+		return this.y > canvas.height;
 	},
 	customInitialize: () => { return; }
 
@@ -101,7 +111,35 @@ var Aliens = {
 		},
 		speed: 3,
 		src: "blue.png"
-	})
+	}),
+	Crawly: Object.assign({}, BaseAlien, {
+		type: "Crawly",
+		update: function () {
+			this.x += this.speed;
+		},
+		customInitialize: function () {
+			this.originX = choose([-this.img.width, canvas.width]);	
+			this.originY = (Math.floor(canvas.height * 0.5) 
+				+ getRandomInt(Math.floor(canvas.height * 0.5) - this.img.height));
+			this.x = this.originX;
+			this.y = this.originY;
+			this.speed = (this.originX > 0) ? -this.baseSpeed : this.baseSpeed;
+			console.log(this);
+		},
+		outOfBounds: function() {
+			return (this.originX < 0) ? (this.x > canvas.width) : (this.x < -this.img.width);
+		},
+		baseSpeed: 3,
+		src: "yellow.png"
+	}),
+	Fasty: Object.assign({}, BaseAlien, {
+		type: "Fasty",
+		update: function () {
+			this.y += this.speed;
+		},
+		speed: 6,
+		src: "white.png"
+	}),
 };
 
 //~~~~~~~~~~~~~~~~~~~//
@@ -114,11 +152,6 @@ getDist2 = (x1, y1, x2, y2) => {
 	return (Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
 }
 
-// Random choice from an array
-choose = (choices) => {
-  let index = Math.floor(Math.random() * choices.length);
-  return choices[index];
-}
 
 spriteFactory = (image) => {
 	let sprite = Object.assign({img: new Image()}, Sprite);
@@ -138,7 +171,7 @@ alienFactory = (type) => {
 	let alien = Object.assign({}, type, {img: new Image()});
 	alien.img.src = alien.src;
 	alien.initialize();
-	console.log(alien);
+	//console.log(alien);
 	return alien;
 }
 
@@ -260,7 +293,7 @@ updateMissiles = () => {
 		missilePool.ready[0].exploded = false;
 		missilePool.onCanvas.push(missilePool.ready.shift());
 		missilePool.cooldown = missilePool.cooldownTime;
-		console.log(missilePool);
+		//console.log(missilePool);
 	}
 	
 	// Move each onCanvas missile
@@ -281,7 +314,7 @@ updateBomb = () => {
 			r: 0
 		}
 		bomb.dist2 = Math.max(getDist2(bomb.x, bomb.y, 0, 0,), getDist2(bomb.x, bomb.y, canvas.width, 0), getDist2(bomb.x, bomb.y, 0, canvas.height), getDist2(bomb.x, bomb.y, canvas.width, canvas.height));
-		console.log(bomb)
+		//console.log(bomb)
 	}
 
 	// Grow bomb
@@ -379,10 +412,10 @@ updateAliens = () => {
 		alien.update();
 	});
 
-	// Sort the onCanvas pool by y position, then pop any aliens off canvas back to their waiting pools 
-	alienPools.onCanvas.sort((a, b) => (a.y > b.y) ? -1 : 1);
+	// Sort the onCanvas pool by outOfBounds, then pop any aliens off canvas back to their waiting pools 
+	alienPools.onCanvas.sort(function(x,y) { return (x.outOfBounds() === y.outOfBounds()) ? 0 : x.outOfBounds() ? -1 : 1 });
 
-	while (alienPools.onCanvas.length > 0 && alienPools.onCanvas[0].y > canvas.height) {
+	while (alienPools.onCanvas.length > 0 && alienPools.onCanvas[0].outOfBounds()) {
 		alienPools.onCanvasCount[alienPools.onCanvas[0].type] -= 1;
 		alienPools[alienPools.onCanvas[0].type].push(alienPools.onCanvas.shift());
 	}
@@ -462,7 +495,7 @@ keyPressed = (event) => {
 	if (keys.has(event.key)) {
 		keyState[event.key.toLowerCase()] = true;
 	}
-	console.log(keyState);
+	//console.log(keyState);
 }
 
 keyReleased = (event) => {
@@ -483,8 +516,8 @@ init = () => {
 		waveData.curWave = 0;
 		waveData.spacingTimeout = 0;
 		waveData.leftInCurWave = Object.assign({}, waveData.waves[0]);
-		console.log(alienPools);
-		console.log(waveData);
+		//console.log(alienPools);
+		//console.log(waveData);
 		updateState();
 		updateCanvas();
 	});
