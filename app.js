@@ -120,11 +120,10 @@ var Aliens = {
 		customInitialize: function () {
 			this.originX = choose([-this.img.width, canvas.width]);	
 			this.originY = (Math.floor(canvas.height * 0.5) 
-				+ getRandomInt(Math.floor(canvas.height * 0.5) - this.img.height));
+				+ getRandomInt(Math.floor(canvas.height * 0.5)) - this.img.height);
 			this.x = this.originX;
 			this.y = this.originY;
 			this.speed = (this.originX > 0) ? -this.baseSpeed : this.baseSpeed;
-			console.log(this);
 		},
 		outOfBounds: function() {
 			return (this.originX < 0) ? (this.x > canvas.width) : (this.x < -this.img.width);
@@ -140,6 +139,29 @@ var Aliens = {
 		speed: 6,
 		src: "white.png"
 	}),
+	Circly: Object.assign({}, BaseAlien, {
+		type: "Circly",
+		rotation: 0.1,
+		theta: 0,
+		r: 0,
+		update: function () {
+			this.offsetY += this.speed;
+			this.theta += this.rotation;
+			this.x = Math.floor(this.originX + this.r * Math.cos(this.theta));
+			this.y = Math.floor(this.offsetY + this.r * Math.sin(this.theta));
+		},
+		customInitialize: function () {
+			this.offsetY = this.originY;
+			this.r = 40 + getRandomInt(40);
+			this.theta = 0;
+			this.rotation = choose([1, -1]) * this.rotation;
+		},
+		outOfBounds: function() {
+			return this.offsetY > canvas.height && this.y > canvas.height;
+		},
+		speed: 2,
+		src: "green.png"
+	})
 };
 
 //~~~~~~~~~~~~~~~~~~~//
