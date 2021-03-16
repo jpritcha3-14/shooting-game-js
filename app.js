@@ -24,7 +24,7 @@ var stars = [];
 
 var missilePool = {
 	ready: [],
-	fired: [],
+	onCanvas: [],
 	speed: 0,
 	cooldown: 0,
 	cooldownTime: 0
@@ -206,7 +206,7 @@ drawStars = (ctx) => {
 }
 
 drawMissiles = (ctx) => {
-	missilePool.fired.forEach(missile => ctx.drawImage(missile.img, missile.x, missile.y));
+	missilePool.onCanvas.forEach(missile => ctx.drawImage(missile.img, missile.x, missile.y));
 }
 
 drawBomb = (ctx) => {
@@ -258,17 +258,17 @@ updateMissiles = () => {
 		missilePool.ready[0].x = ship.x + Math.floor(ship.img.width / 2) - Math.floor(missilePool.ready[0].img.width / 2);
 		missilePool.ready[0].y = ship.y;
 		missilePool.ready[0].exploded = false;
-		missilePool.fired.push(missilePool.ready.shift());
+		missilePool.onCanvas.push(missilePool.ready.shift());
 		missilePool.cooldown = missilePool.cooldownTime;
 		console.log(missilePool);
 	}
 	
-	// Move each fired missile
-	missilePool.fired.forEach(missile => missile.y -= missilePool.speed);
+	// Move each onCanvas missile
+	missilePool.onCanvas.forEach(missile => missile.y -= missilePool.speed);
 
-	// Boundary check oldest fired missile
-	if (missilePool.fired.length > 0 && missilePool.fired[0].y < -Math.floor(missilePool.fired[0].img.height / 2)) {
-		missilePool.ready.push(missilePool.fired.shift());
+	// Boundary check oldest onCanvas missile
+	if (missilePool.onCanvas.length > 0 && missilePool.onCanvas[0].y < -Math.floor(missilePool.onCanvas[0].img.height / 2)) {
+		missilePool.ready.push(missilePool.onCanvas.shift());
 	}
 }
 
@@ -416,26 +416,41 @@ detectCollisions = () => {
 	});
 
 	// Between aliens and missiles
-	if (alienPools.onCanvas.length == 0 || missilePool.fired.length == 0) { return; }
-	alienPools.onCanvas.forEach(a => {
-		missilePool.fired.forEach(m => {
-			if (detectCollision(a, m)) {
-				a.exploded = true;
-				m.exploded = true;
-				placeExplosion(a);
-			}	
+	if (alienPools.onCanvas.length > 0 && missilePool.onCanvas.length > 0) {
+		alienPools.onCanvas.forEach(a => {
+			missilePool.onCanvas.forEach(m => {
+				if (detectCollision(a, m)) {
+					a.exploded = true;
+					m.exploded = true;
+					placeExplosion(a);
+				}	
+			});
 		});
-	});
+	}
+
+	// Between bomb and aliens
+	if (bomb && alienPools.onCanvas.length > 0) {
+		alienPools.onCanvas.forEach(a => {
+			if (getDist2(bomb.x, bomb.y, a.x + a.img.width/2, a.y + a.img.height/2) < Math.pow(bomb.r, 2)) {
+				a.exploded = true;
+				placeExplosion(a);
+			}
+		});
+	}
+
+	// Sort alien and missile pools, placing exploded objects at the front
 	alienPools.onCanvas.sort(function(x,y) { return (x.exploded === y.exploded) ? 0 : x.exploded ? -1 : 1 });
-	missilePool.fired.sort(function(x,y) { return (x.exploded === y.exploded) ? 0 : x.exploded ? -1 : 1 });
+	missilePool.onCanvas.sort(function(x,y) { return (x.exploded === y.exploded) ? 0 : x.exploded ? -1 : 1 });
+
+	// Pop exploded aliens and missiles from canvas back to waiting pools 
 	while (alienPools.onCanvas.length > 0 && alienPools.onCanvas[0].exploded) {
 		let alienType = alienPools.onCanvas[0].type;
 		waveData.leftInCurWave[alienType] -= 1;
 		alienPools.onCanvasCount[alienType] -= 1;
 		alienPools[alienType].push(alienPools.onCanvas.shift());
 	}
-	while (missilePool.fired.length > 0 && missilePool.fired[0].exploded) {
-		missilePool.ready.push(missilePool.fired.shift());
+	while (missilePool.onCanvas.length > 0 && missilePool.onCanvas[0].exploded) {
+		missilePool.ready.push(missilePool.onCanvas.shift());
 	}
 }
 
