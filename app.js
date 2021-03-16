@@ -396,18 +396,22 @@ updateExplosions = () => {
 	}
 }
 
+placeExplosion = (thing) => {
+	if (explosionPool.queue.length > 0) {
+		let explosion = explosionPool.queue[0];
+		explosion.x = thing.x - (explosion.img.width - thing.img.width)/2;
+		explosion.y = thing.y - (explosion.img.height - thing.img.height)/2;
+		explosion.ttl = explosion.life;
+		explosionPool.onCanvas.push(explosionPool.queue.shift());
+	} 
+} 
+
 detectCollisions = () => {
 	// Between ship and aliens
 	alienPools.onCanvas.forEach(alien => {
 		if (ship.alive && detectCollision(ship, alien, wiggle=3)) {
 			ship.alive = false;
-			if (explosionPool.queue.length > 0) {
-				let explosion = explosionPool.queue[0];
-				explosion.x = ship.x;
-				explosion.y = ship.y;
-				explosion.ttl = explosion.life;
-				explosionPool.onCanvas.push(explosionPool.queue.shift());
-			} 
+			placeExplosion(ship);
 		}
 	});
 
@@ -418,12 +422,7 @@ detectCollisions = () => {
 			if (detectCollision(a, m)) {
 				a.exploded = true;
 				m.exploded = true;
-
-				let explosion = explosionPool.queue[0];
-				explosion.x = a.x;
-				explosion.y = a.y;
-				explosion.ttl = explosion.life;
-				explosionPool.onCanvas.push(explosionPool.queue.shift());
+				placeExplosion(a);
 			}	
 		});
 	});
