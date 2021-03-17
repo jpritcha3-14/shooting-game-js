@@ -37,6 +37,13 @@ var explosionPool = {
 	queue: []
 };
 
+var powerupPool = {
+	timeout: 300,
+	time: 0,
+	active: -1,
+	powerups: []
+};
+ 
 var alienPools = {
 	onCanvas: [],
 	onCanvasCount: {}
@@ -65,6 +72,44 @@ choose = (choices) => {
   let index = Math.floor(Math.random() * choices.length);
   return choices[index];
 }
+
+var BasePowerup = {
+	x: 0,
+	y: 0,
+	theta: 0,
+	rotation: 0.05,
+	speed: 3,
+	initialize: function () {
+		this.originX = getRandomInt(canvas.width - this.img.width);
+		this.originY = -this.img.height;
+		this.x = this.originX;
+		this.y = this.originY;
+	},
+	update: function () {
+		this.y += this.speed;
+		this.theta += this.rotation;
+	},
+	outOfBounds: function() {
+		return this.y > canvas.height;
+	}
+}
+
+var Powerups = {
+	Shield: Object.assign({}, BasePowerup, {
+		src: "shield.png",
+		pickup: function () {
+			ship.bombs += 1;
+			console.log('got shield');
+		}
+	}),
+	Bomb: Object.assign({}, BasePowerup, {
+		src: "bomb.png",
+		pickup: function () {
+			ship.shield += true;
+			console.log('got bomb');
+		}
+	})
+};
 
 var BaseAlien = {
 	x: 0,
@@ -128,7 +173,7 @@ var Aliens = {
 			this.speed = (this.originX > 0) ? -this.baseSpeed : this.baseSpeed;
 		},
 		outOfBounds: function() {
-			return (this.originX < 0) ? (this.x > canvas.width) : (this.x < -this.img.width);
+			return ((this.x > canvas.width + 1) || (this.x < -this.img.width));
 		},
 		baseSpeed: 3,
 		src: "yellow.png"
@@ -195,7 +240,6 @@ alienFactory = (type) => {
 	let alien = Object.assign({}, type, {img: new Image()});
 	alien.img.src = alien.src;
 	alien.initialize();
-	//console.log(alien);
 	return alien;
 }
 
@@ -241,14 +285,24 @@ populateExplosionPool = (num=10, img='explosion.png', life=10) => {
 	}
 }
 
+populatePowerupPool = () => {
+	for (p in Powerups) {
+		let cur = Object.assign({img: new Image()}, Powerups[p]);
+		cur.img.src = cur.src;
+		console.log(cur);
+		powerupPool.powerups.push(cur);
+	}
+}
+
 resetShip = () => {
 	ship.x = canvas.width / 2 - ship.img.width / 2;
 	ship.y = canvas.height - ship.img.height;
 	ship.alive = true;
+	ship.bombs = 1;
 }
 
 initializeShip = () => {
-	ship = Object.assign(spriteFactory('ship.png'), {speed: 5, alive: true});
+	ship = Object.assign(spriteFactory('ship.png'), {speed: 5, alive: true, shield: false, bombs: 1});
 	resetShip();
 }
 
@@ -284,6 +338,18 @@ drawBomb = (ctx) => {
 
 drawAliens = (ctx) => {
 	alienPools.onCanvas.forEach(alien => ctx.drawImage(alien.img, alien.x, alien.y));
+}
+
+drawPowerup = (ctx) => {
+	if (powerupPool.active > -1) {
+		let p = powerupPool.powerups[powerupPool.active];
+		ctx.save();
+		ctx.translate(p.x + Math.floor(p.img.width/2), p.y + Math.floor(p.img.height/2));
+		ctx.rotate(p.theta);
+		ctx.translate(-p.x - Math.floor(p.img.width/2), -p.y - Math.floor(p.img.height/2));
+		ctx.drawImage(p.img, p.x, p.y);
+		ctx.restore();
+	}
 }
 
 drawExplosions = (ctx) => {
@@ -358,6 +424,25 @@ updateBomb = () => {
 		bomb.r += 5;
 		if (Math.pow(bomb.r, 2) > bomb.dist2) {
 			bomb = null;
+		}
+	}
+}
+
+updatePowerup = () => {
+	if (powerupPool.active == -1) {
+		powerupPool.time -= 1;
+		if (powerupPool.time <= 0) {
+			console.log('spawn powerup');
+			powerupPool.active = getRandomInt(powerupPool.powerups.length) - 1;
+			console.log(powerupPool.active);
+			powerupPool.powerups[powerupPool.active].initialize();
+			powerupPool.time = powerupPool.timeout;
+		}
+	} else {
+		let cur = powerupPool.powerups[powerupPool.active];
+		cur.update();
+		if (cur.outOfBounds()) {
+			powerupPool.active = -1;	
 		}
 	}
 }
@@ -485,6 +570,12 @@ detectCollisions = () => {
 		}
 	});
 
+	// Between ship and powerup
+	if (powerupPool.active >= 0 && ship.alive && detectCollision(ship, powerupPool.powerups[powerupPool.active])) {
+		powerupPool.powerups[powerupPool.active].pickup();
+		powerupPool.active = -1;
+	}
+	
 	// Between aliens and missiles
 	if (alienPools.onCanvas.length > 0 && missilePool.onCanvas.length > 0) {
 		alienPools.onCanvas.forEach(a => {
@@ -564,6 +655,8 @@ restart = () => {
 	waveData.leftInCurWave = Object.assign({}, waveData.waves[0]); 
 	waveData.curWave = 0;
 	clearKeyEvents();
+	powerupPool.active = -1;
+	powerupPool.time = powerupPool.timeout;
 	resetShip();
 }
 
@@ -573,6 +666,7 @@ init = () => {
 	populateStars();
 	populateMissilePool();
 	populateExplosionPool();
+	populatePowerupPool();
 	$.getJSON("waveData.json").done(function (data) {
 		waveData = data;
 		populateAlientPools(waveData.types);
@@ -592,6 +686,7 @@ updateState = () => {
 	updateMissiles();
 	updateBomb();
 	updateAliens();
+	updatePowerup();
 	updateShip();
 	detectCollisions();
 	updateExplosions();
@@ -607,6 +702,7 @@ updateCanvas = () => {
 	drawMissiles(ctx);
 	drawBomb(ctx);
 	drawAliens(ctx);
+	drawPowerup(ctx);
 	drawShip(ctx);
 	drawExplosions(ctx);
 	if (!ship.alive) {
