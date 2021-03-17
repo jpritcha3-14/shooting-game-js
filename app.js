@@ -9,7 +9,7 @@ var ship;
 
 const root2 = Math.sqrt(2);
 const keys = new Set();
-["w", "a", "s", "d", "b", "W", "A", "S", "D", "B", " "].forEach(item => keys.add(item));
+["w", "a", "s", "d", "b", "r", "W", "A", "S", "D", "B", "R", " "].forEach(item => keys.add(item));
 
 // Only updated by key events
 var keyState = {
@@ -17,6 +17,8 @@ var keyState = {
 	a: false,
 	s: false,
 	d: false,
+	b: false,
+	r: false,
 	" ": false
 };
 
@@ -119,8 +121,8 @@ var Aliens = {
 		},
 		customInitialize: function () {
 			this.originX = choose([-this.img.width, canvas.width]);	
-			this.originY = (Math.floor(canvas.height * 0.5) 
-				+ getRandomInt(Math.floor(canvas.height * 0.5)) - this.img.height);
+			this.originY = (Math.floor(canvas.height * 0.75) 
+				+ getRandomInt(Math.floor(canvas.height * 0.25)) - this.img.height);
 			this.x = this.originX;
 			this.y = this.originY;
 			this.speed = (this.originX > 0) ? -this.baseSpeed : this.baseSpeed;
@@ -239,10 +241,15 @@ populateExplosionPool = (num=10, img='explosion.png', life=10) => {
 	}
 }
 
-initializeShip = () => {
-	ship = Object.assign(spriteFactory('ship.png'), {speed: 5, alive: true});
+resetShip = () => {
 	ship.x = canvas.width / 2 - ship.img.width / 2;
 	ship.y = canvas.height - ship.img.height;
+	ship.alive = true;
+}
+
+initializeShip = () => {
+	ship = Object.assign(spriteFactory('ship.png'), {speed: 5, alive: true});
+	resetShip();
 }
 
 //~~~~~~~~~~~~~~~~//
@@ -287,6 +294,13 @@ drawShip = (ctx) => {
 	if (ship.alive) {
 		ctx.drawImage(ship.img, ship.x, ship.y);
 	}
+}
+
+drawGameOver = (ctx) => {
+	ctx.font = "bold 30px Arial";
+	ctx.fillStyle = "red";
+	ctx.textAlign = "center";
+	ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2);
 }
 
 //~~~~~~~~~~~~~~~~~~//
@@ -350,6 +364,7 @@ updateBomb = () => {
 
 updateShip = () => {
 	if (!ship.alive) {
+		if (keyState.r) { restart(); }
 		return;
 	}
 	// Cardinal Directions
@@ -506,8 +521,9 @@ detectCollisions = () => {
 	}
 	while (missilePool.onCanvas.length > 0 && missilePool.onCanvas[0].exploded) {
 		missilePool.ready.push(missilePool.onCanvas.shift());
-	}
+	} 
 }
+
 
 //~~~~~~~~~~~~//
 // Main Logic //
@@ -517,13 +533,38 @@ keyPressed = (event) => {
 	if (keys.has(event.key)) {
 		keyState[event.key.toLowerCase()] = true;
 	}
-	//console.log(keyState);
 }
 
 keyReleased = (event) => {
 	if (keys.has(event.key)) {
 		keyState[event.key.toLowerCase()] = false;
 	}
+}
+
+clearKeyEvents = (event) => {
+	for (key in keyState) {
+		keyState[key] = false;
+	}
+}
+
+restart = () => {
+	bomb = null;
+	while (missilePool.onCanvas.length > 0) {
+		missilePool.ready.push(missilePool.onCanvas.shift());
+	}
+	while (alienPools.onCanvas.length > 0) {
+		alienPools[alienPools.onCanvas[0].type].push(alienPools.onCanvas.shift());
+	}
+	while (explosionPool.onCanvas.length > 0) {
+		explosionPool.queue.push(explosionPool.onCanvas.shift());
+	}
+	waveData.types.forEach(t => { 
+		alienPools.onCanvasCount[t] = 0;
+	});
+	waveData.leftInCurWave = Object.assign({}, waveData.waves[0]); 
+	waveData.curWave = 0;
+	clearKeyEvents();
+	resetShip();
 }
 
 init = () => {
@@ -538,8 +579,6 @@ init = () => {
 		waveData.curWave = 0;
 		waveData.spacingTimeout = 0;
 		waveData.leftInCurWave = Object.assign({}, waveData.waves[0]);
-		//console.log(alienPools);
-		//console.log(waveData);
 		updateState();
 		updateCanvas();
 	});
@@ -561,7 +600,6 @@ updateState = () => {
 // Main Draw Function, tied to browser refresh rate
 updateCanvas = () => {
 	window.requestAnimationFrame(updateCanvas);
-
 	let ctx = canvas.getContext('2d');
 	ctx.fillStyle = "black";
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -571,8 +609,13 @@ updateCanvas = () => {
 	drawAliens(ctx);
 	drawShip(ctx);
 	drawExplosions(ctx);
+	if (!ship.alive) {
+		drawGameOver(ctx);
+	}
 }
+
 
 window.onload = init;
 document.addEventListener("keydown", keyPressed);
 document.addEventListener("keyup", keyReleased);
+window.addEventListener("focus", clearKeyEvents);
