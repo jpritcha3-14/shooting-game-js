@@ -363,7 +363,7 @@ drawShip = (ctx) => {
 }
 
 drawGameOver = (ctx) => {
-	ctx.font = "bold 30px Arial";
+	ctx.font = "bold 30px Courier New";
 	ctx.fillStyle = "red";
 	ctx.textAlign = "center";
 	ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2);

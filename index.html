@@ -1,22 +1,82 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8"/>
-    <title>Shooting Game</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="app.js"></script>
-    <style type="text/css">
-      canvas { border: 1px solid black; }
-    </style>
-  </head>
-  <body>
-    <canvas id="gameArea" width="500" height="500"></canvas>
-    <h3>Controls</h3>
-    <ul>
-	    <li>WASD: move ship</>
-	    <li>Space: fire missiles</>
-	    <li>b: drop bomb</>
-	    <li>r: restart on game over</>
-    </ul>
-  </body>
+	<head>
+    		<meta charset="utf-8"/>
+    		<title>Shooting Game</title>
+    		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    		<script src="app.js"></script>
+    		<style type="text/css">
+			body { 
+				background-color: black;
+				font-family: 'Courier New', monospace;
+				font-weight: bold;
+			}
+			img {
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+			}
+			table {
+				table-layout: fixed;
+				width: 760px;
+				border-spacing: 0;
+				border-collapse: collapse;
+			}
+      			canvas { border: 5px solid blue; }
+      			td { 
+				width: 253px;
+	   			font-size: 1.5em;
+				text-align: center;
+      			}
+      			h3 {
+				color: red;
+      			}
+      			ul {
+				color: red;
+      			}
+			#labels {
+				color: blue;
+			}
+			#values {
+				color: red;
+			}
+      			#row2 {
+				box-sizing: border-box;
+      			}
+      			#row3 {
+				box-sizing: border-box;
+      			}
+			.content {
+				max-width: 760px;
+				margin: auto;
+			}
+    		</style>
+	</head>
+  	<body>
+		<div class="content">
+			<img src="title.png" alt="title">
+  			<table id="labels">
+	  			<tr>
+		  			<td>Missiles</td> 
+		  			<td id="row2">Bombs</td> 
+		  			<td id="row3">Shield</td> 
+	  			</tr>
+  			</table>
+  			<table id="values">
+	  			<tr>
+		  			<td>100</td> 
+		  			<td id="row2">1</td> 
+		  			<td id="row3">10</td> 
+	  			</tr>
+  			</table>
+  			<canvas id="gameArea" width="750" height="500"></canvas>
+			<h3>Controls</h3>
+    			<ul>
+	    			<li>WASD: move ship</>
+	    			<li>Space: fire missiles</>
+	    			<li>b: drop bomb</>
+	    			<li>r: restart on game over</>
+    			</ul>
+		</div>
+	</body>
 </html>
