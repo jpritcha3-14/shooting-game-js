@@ -1,0 +1,39 @@
+body { 
+	background-color: black;
+	font-family: 'Courier New', monospace;
+	font-weight: bold;
+}
+img {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+table {
+	table-layout: fixed;
+	width: 760px;
+	border-spacing: 0;
+}
+canvas {
+	border: 5px solid blue;
+}
+   			td { 
+	width: 185px;
+ 			font-size: 1.5em;
+	text-align: center;
+      }
+      h3 {
+	color: red;
+      }
+      ul {
+	color: red;
+      }
+#labels {
+	color: blue;
+}
+#values {
+	color: red;
+}
+.content {
+	max-width: 760px;
+	margin: auto;
+}

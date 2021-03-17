@@ -6,10 +6,11 @@ var canvas = {width: 0, height:0};
 var waveData;
 var bomb;
 var ship;
+var display;
 
 const root2 = Math.sqrt(2);
 const keys = new Set();
-["w", "a", "s", "d", "b", "r", "W", "A", "S", "D", "B", "R", " "].forEach(item => keys.add(item));
+["w", "a", "s", "d", "b", "r", " ", "shift"].forEach(item => keys.add(item));
 
 // Only updated by key events
 var keyState = {
@@ -19,7 +20,8 @@ var keyState = {
 	d: false,
 	b: false,
 	r: false,
-	" ": false
+	" ": false,
+	"shift": false
 };
 
 var stars = [];
@@ -95,17 +97,27 @@ var BasePowerup = {
 }
 
 var Powerups = {
+	Misiles: Object.assign({}, BasePowerup, {
+		src: "missiles.png",
+		pickup: function () {
+			ship.missiles += 10;
+			ship.missiles = (ship.missiles > 100) ? 100 : ship.missiles;
+			console.log('got missiles');
+		}
+	}),
 	Shield: Object.assign({}, BasePowerup, {
 		src: "shield.png",
 		pickup: function () {
-			ship.bombs += 1;
+			ship.shield.power += 10;
+			ship.shield.power = (ship.shield.power > 100) ? 100 : ship.shield.power;
 			console.log('got shield');
 		}
 	}),
 	Bomb: Object.assign({}, BasePowerup, {
 		src: "bomb.png",
 		pickup: function () {
-			ship.shield += true;
+			ship.bombs += 1;
+			ship.bombs = (ship.bombs > 3) ? 3 : ship.bombs;
 			console.log('got bomb');
 		}
 	})
@@ -298,11 +310,28 @@ resetShip = () => {
 	ship.x = canvas.width / 2 - ship.img.width / 2;
 	ship.y = canvas.height - ship.img.height;
 	ship.alive = true;
+	ship.missiles = 50;
 	ship.bombs = 1;
+	ship.shield.power = 20;
+	ship.score = 0;
 }
 
 initializeShip = () => {
-	ship = Object.assign(spriteFactory('ship.png'), {speed: 5, alive: true, shield: false, bombs: 1});
+	ship = Object.assign(spriteFactory('ship.png'), {
+		speed: 5, 
+		alive: true, 
+		missiles: 50, 
+		bombs: 1, 
+		shield: {
+			active: false,
+			power: 20,
+			drain: 6,
+			drainTime: 6,
+		}, 
+		score: 0 
+	});
+	ship.shield.img = new Image();
+	ship.shield.img.src = 'ship_shield.png';
 	resetShip();
 }
 
@@ -358,7 +387,7 @@ drawExplosions = (ctx) => {
 
 drawShip = (ctx) => {
 	if (ship.alive) {
-		ctx.drawImage(ship.img, ship.x, ship.y);
+		ctx.drawImage((ship.shield.active) ? ship.shield.img : ship.img, ship.x, ship.y);
 	}
 }
 
@@ -389,13 +418,13 @@ updateMissiles = () => {
 	}
 
 	// Launch Missile
-	if (keyState[" "] && missilePool.cooldown == 0 && ship.alive && missilePool.ready.length > 0) {
+	if (keyState[" "] && ship.alive && ship.missiles > 0 && missilePool.cooldown == 0 && missilePool.ready.length > 0) {
 		missilePool.ready[0].x = ship.x + Math.floor(ship.img.width / 2) - Math.floor(missilePool.ready[0].img.width / 2);
 		missilePool.ready[0].y = ship.y;
 		missilePool.ready[0].exploded = false;
 		missilePool.onCanvas.push(missilePool.ready.shift());
 		missilePool.cooldown = missilePool.cooldownTime;
-		//console.log(missilePool);
+		ship.missiles -= 1;
 	}
 	
 	// Move each onCanvas missile
@@ -409,14 +438,14 @@ updateMissiles = () => {
 
 updateBomb = () => {
 	// Initialize bomb
-	if (keyState.b && !bomb && ship.alive) {
+	if (keyState.b && !bomb && ship.alive && ship.bombs > 0) {
 		bomb = {
 			x: ship.x + Math.floor(ship.img.width / 2),
 			y: ship.y + Math.floor(ship.img.height / 2),
 			r: 0
 		}
 		bomb.dist2 = Math.max(getDist2(bomb.x, bomb.y, 0, 0,), getDist2(bomb.x, bomb.y, canvas.width, 0), getDist2(bomb.x, bomb.y, 0, canvas.height), getDist2(bomb.x, bomb.y, canvas.width, canvas.height));
-		//console.log(bomb)
+		ship.bombs -= 1;
 	}
 
 	// Grow bomb
@@ -488,6 +517,18 @@ updateShip = () => {
 	}
 	if (ship.y > canvas.height - ship.img.height) {
 		ship.y = canvas.height - ship.img.height;
+	}
+
+	// Shield
+	if (keyState.shift && ship.shield.power > 0) {
+		ship.shield.active = true;
+		ship.shield.drain -= 1;
+		if (ship.shield.drain <= 0) {
+			ship.shield.drain = ship.shield.drainTime;
+			ship.shield.power -= 1;
+		}
+	} else {
+		ship.shield.active = false;	
 	}
 }
 
@@ -565,8 +606,14 @@ detectCollisions = () => {
 	// Between ship and aliens
 	alienPools.onCanvas.forEach(alien => {
 		if (ship.alive && detectCollision(ship, alien, wiggle=3)) {
-			ship.alive = false;
-			placeExplosion(ship);
+			if (ship.shield.active) {
+				alien.exploded = true;
+				ship.score += 1;
+				placeExplosion(alien);
+			} else {
+				ship.alive = false;
+				placeExplosion(ship);
+			}
 		}
 	});
 
@@ -583,6 +630,7 @@ detectCollisions = () => {
 				if (detectCollision(a, m)) {
 					a.exploded = true;
 					m.exploded = true;
+					ship.score += 1;
 					placeExplosion(a);
 				}	
 			});
@@ -615,21 +663,32 @@ detectCollisions = () => {
 	} 
 }
 
+updateDisplay = () => {
+	display.missiles.innerHTML = ship.missiles;
+	display.bombs.innerHTML = ship.bombs;
+	display.shield.innerHTML = ship.shield.power;
+	display.score.innerHTML = ship.score;
+}
 
 //~~~~~~~~~~~~//
 // Main Logic //
 //~~~~~~~~~~~~//
 
 keyPressed = (event) => {
-	if (keys.has(event.key)) {
+	if (keys.has(event.key.toLowerCase())) {
+		
 		keyState[event.key.toLowerCase()] = true;
 	}
+	console.log(event.key.toLowerCase());
+	console.log(keyState);
 }
 
 keyReleased = (event) => {
-	if (keys.has(event.key)) {
+	if (keys.has(event.key.toLowerCase())) {
 		keyState[event.key.toLowerCase()] = false;
 	}
+	console.log(event.key.toLowerCase());
+	console.log(keyState);
 }
 
 clearKeyEvents = (event) => {
@@ -662,6 +721,12 @@ restart = () => {
 
 init = () => {
 	canvas = document.getElementById('gameArea');
+	display = {
+		missiles: document.getElementById("missiles"),
+		bombs: document.getElementById("bombs"),
+		shield: document.getElementById("shield"),
+		score: document.getElementById("score")
+	};
 	initializeShip();
 	populateStars();
 	populateMissilePool();
@@ -675,7 +740,7 @@ init = () => {
 		waveData.leftInCurWave = Object.assign({}, waveData.waves[0]);
 		updateState();
 		updateCanvas();
-	});
+});
 }
 
 // Main Update Function, called at regular interval
@@ -690,6 +755,7 @@ updateState = () => {
 	updateShip();
 	detectCollisions();
 	updateExplosions();
+	updateDisplay();
 }
 
 // Main Draw Function, tied to browser refresh rate

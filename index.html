@@ -5,72 +5,36 @@
     		<title>Shooting Game</title>
     		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     		<script src="app.js"></script>
-    		<style type="text/css">
-			body { 
-				background-color: black;
-				font-family: 'Courier New', monospace;
-				font-weight: bold;
-			}
-			img {
-				display: block;
-				margin-left: auto;
-				margin-right: auto;
-			}
-			table {
-				table-layout: fixed;
-				width: 760px;
-				border-spacing: 0;
-			}
-			canvas {
-				border: 5px solid blue;
-			}
-      			td { 
-				width: 250px;
-	   			font-size: 1.5em;
-				text-align: center;
-      			}
-      			h3 {
-				color: red;
-      			}
-      			ul {
-				color: red;
-      			}
-			#labels {
-				color: blue;
-			}
-			#values {
-				color: red;
-			}
-			.content {
-				max-width: 760px;
-				margin: auto;
-			}
-    		</style>
+		<link rel="stylesheet" href="style.css">
 	</head>
   	<body>
 		<div class="content">
 			<img src="title.png" alt="title">
+  			<canvas id="gameArea" width="750" height="500"></canvas>
+  			<table id="values">
+	  			<tr>
+		  			<td id="missiles"></td> 
+		  			<td id="bombs"></td> 
+		  			<td id="shield"></td> 
+		  			<td id="score"></td> 
+	  			</tr>
+  			</table>
   			<table id="labels">
 	  			<tr>
 		  			<td>Missiles</td> 
-		  			<td id="row2">Bombs</td> 
-		  			<td id="row3">Shield</td> 
+		  			<td>Bombs</td> 
+		  			<td>Shield</td> 
+		  			<td>Score</td> 
 	  			</tr>
   			</table>
-  			<table id="values">
-	  			<tr>
-		  			<td>100</td> 
-		  			<td id="row2">1</td> 
-		  			<td id="row3">10</td> 
-	  			</tr>
-  			</table>
-  			<canvas id="gameArea" width="750" height="500"></canvas>
 			<h3>Controls</h3>
     			<ul>
 	    			<li>WASD: move ship</>
 	    			<li>Space: fire missiles</>
 	    			<li>b: drop bomb</>
 	    			<li>r: restart on game over</>
+	    			<li>shift: activate shield</>
+
     			</ul>
 		</div>
 	</body>
