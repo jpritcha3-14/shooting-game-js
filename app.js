@@ -241,11 +241,13 @@ spriteFactory = (image) => {
 }
 
 starFactory = (height=-5) => {
-	return {
+	let cur = {
 		x: getRandomInt(canvas.width),
 		y: height,
-		sz: getRandomInt(3)
+		sz: choose([1,2,2,3,3]),
 	};
+	cur.speed = (cur.sz == 1) ? choose([0.5, 1, 1]) : (cur.sz == 2) ? choose([1, 1.5, 1.5]) : choose([1.5, 1.5, 2]);
+	return cur;
 }
 
 alienFactory = (type) => {
@@ -416,10 +418,11 @@ drawWaveNumber = (ctx) => {
 // Update Functions //
 //~~~~~~~~~~~~~~~~~~//
 updateStars = () => {
-	stars.forEach(s => s.y += 1);
+	stars.forEach(s => s.y += s.speed);
 
 	// Create a new star when one goes off bottom of canvas
-	if (stars[0].y >= canvas.height) {
+	stars.sort((a, b) => {return b.y - a.y});
+	while (stars[0].y >= canvas.height) {
 		stars.shift();
 		stars.push(starFactory());
 	}
