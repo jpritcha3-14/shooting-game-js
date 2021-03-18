@@ -161,7 +161,7 @@ var Aliens = {
 		frequency: 0,
 		update: function () {
 			this.y += this.speed;
-			this.x = Math.floor(this.originX + this.magnitude * Math.sin(this.y/this.frequency + this.phase));
+			this.x = this.originX + this.magnitude * Math.sin(this.y/this.frequency + this.phase);
 		},
 		customInitialize: function () {
 			this.magnitude = 30 + getRandomInt(50);
@@ -178,7 +178,7 @@ var Aliens = {
 		},
 		customInitialize: function () {
 			this.originX = choose([-this.img.width, canvas.width]);	
-			this.originY = (Math.floor(canvas.height * 0.75) 
+			this.originY = (canvas.height * 0.75 
 				+ getRandomInt(Math.floor(canvas.height * 0.25)) - this.img.height);
 			this.x = this.originX;
 			this.y = this.originY;
@@ -206,8 +206,8 @@ var Aliens = {
 		update: function () {
 			this.offsetY += this.speed;
 			this.theta += this.rotation;
-			this.x = Math.floor(this.originX + this.r * Math.cos(this.theta));
-			this.y = Math.floor(this.offsetY + this.r * Math.sin(this.theta));
+			this.x = this.originX + this.r * Math.cos(this.theta);
+			this.y = this.offsetY + this.r * Math.sin(this.theta);
 		},
 		customInitialize: function () {
 			this.offsetY = this.originY;
@@ -382,9 +382,9 @@ drawPowerup = (ctx) => {
 	if (powerupPool.active > -1) {
 		let p = powerupPool.powerups[powerupPool.active];
 		ctx.save();
-		ctx.translate(p.x + Math.floor(p.img.width/2), p.y + Math.floor(p.img.height/2));
+		ctx.translate(p.x + p.img.width/2, p.y + p.img.height/2);
 		ctx.rotate(p.theta);
-		ctx.translate(-p.x - Math.floor(p.img.width/2), -p.y - Math.floor(p.img.height/2));
+		ctx.translate(-p.x - p.img.width/2, -p.y - p.img.height/2);
 		ctx.drawImage(p.img, p.x, p.y);
 		ctx.restore();
 	}
@@ -436,7 +436,7 @@ updateMissiles = () => {
 
 	// Launch Missile
 	if (keyState[" "] && ship.alive && ship.missiles > 0 && missilePool.cooldown == 0 && missilePool.ready.length > 0) {
-		missilePool.ready[0].x = ship.x + Math.floor(ship.img.width / 2) - Math.floor(missilePool.ready[0].img.width / 2);
+		missilePool.ready[0].x = ship.x + ship.img.width / 2 - missilePool.ready[0].img.width / 2;
 		missilePool.ready[0].y = ship.y;
 		missilePool.ready[0].exploded = false;
 		missilePool.onCanvas.push(missilePool.ready.shift());
@@ -448,7 +448,7 @@ updateMissiles = () => {
 	missilePool.onCanvas.forEach(missile => missile.y -= missilePool.speed);
 
 	// Boundary check oldest onCanvas missile
-	if (missilePool.onCanvas.length > 0 && missilePool.onCanvas[0].y < -Math.floor(missilePool.onCanvas[0].img.height / 2)) {
+	if (missilePool.onCanvas.length > 0 && missilePool.onCanvas[0].y < -missilePool.onCanvas[0].img.height / 2) {
 		missilePool.ready.push(missilePool.onCanvas.shift());
 	}
 }
@@ -457,8 +457,8 @@ updateBomb = () => {
 	// Initialize bomb
 	if (keyState.f && !bomb && ship.alive && ship.bombs > 0) {
 		bomb = {
-			x: ship.x + Math.floor(ship.img.width / 2),
-			y: ship.y + Math.floor(ship.img.height / 2),
+			x: ship.x + ship.img.width / 2,
+			y: ship.y + ship.img.height / 2,
 			r: 0
 		}
 		bomb.dist2 = Math.max(getDist2(bomb.x, bomb.y, 0, 0,), getDist2(bomb.x, bomb.y, canvas.width, 0), getDist2(bomb.x, bomb.y, 0, canvas.height), getDist2(bomb.x, bomb.y, canvas.width, canvas.height));
