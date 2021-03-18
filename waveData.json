@@ -4,6 +4,18 @@
 		{ "aliens": {	"Simple": 10 },
 		   "spacing": 20
 		},
+		{ "aliens": {	"Siney": 10 },
+		   "spacing": 20
+		},
+		{ "aliens": {	"Crawly": 10 },
+		   "spacing": 20 
+		},
+		{ "aliens": {	"Fasty": 10 },
+		   "spacing": 20
+		},
+		{ "aliens": {	"Circly": 10 },
+		   "spacing": 20
+		},
 		{ "aliens": {	"Simple": 10 ,
 		   		"Siney": 10 },
 		   "spacing": 20
@@ -25,6 +37,33 @@
 		   		"Fasty": 10, 
 		   		"Circly": 10 },
 		   "spacing": 20
+		},
+		{ "aliens": {	"Siney": 20, 
+		   		"Fasty": 20, 
+		   		"Circly": 20 },
+		   "spacing": 20
+		},
+		{ "aliens": {	"Crawly": 25, 
+		   		"Siney": 25, 
+		   		"Fasty": 25 },
+		   "spacing": 15 
+		},
+		{ "aliens": {	"Circly": 25, 
+		   		"Siney": 25, 
+		   		"Simple": 25, 
+		   		"Fasty": 25 },
+		   "spacing": 15 
+		},
+		{ "aliens": {	"Circly": 30, 
+		   		"Siney": 30, 
+		   		"Fasty": 30 },
+		   "spacing": 15 
+		},
+		{ "aliens": {	"Siney": 25, 
+		   		"Crawly": 25, 
+		   		"Fasty": 25, 
+		   		"Circly": 25 },
+		   "spacing": 15 
 		}
 	]
 }

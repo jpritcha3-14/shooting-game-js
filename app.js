@@ -40,7 +40,7 @@ var explosionPool = {
 };
 
 var powerupPool = {
-	timeout: 300,
+	timeout: 250,
 	time: 0,
 	active: -1,
 	powerups: []
@@ -744,8 +744,8 @@ restart = () => {
 	waveData.types.forEach(t => { 
 		alienPools.onCanvasCount[t] = 0;
 	});
-	waveData.leftInCurWave = Object.assign({}, waveData.waves[0].aliens); 
-	waveData.curWave = 0;
+	waveData.curWave = Math.floor(waveData.curWave/5) * 5;
+	waveData.leftInCurWave = Object.assign({}, waveData.waves[waveData.curWave].aliens); 
 	clearKeyEvents();
 	powerupPool.active = -1;
 	powerupPool.time = powerupPool.timeout;
@@ -767,7 +767,8 @@ init = () => {
 	populateMissilePool();
 	populateExplosionPool();
 	populatePowerupPool();
-	$.getJSON("waveData.json").done(function (data) {
+	$.getJSON("waveData.json")
+	.done(function (data) {
 		waveData = data;
 		populateAlientPools(waveData.types);
 		waveData.curWave = 0;
@@ -777,7 +778,9 @@ init = () => {
 		waveData.newWave = true;
 		waveData.leftInCurWave = Object.assign({}, waveData.waves[0].aliens);
 		updateState();
-		updateCanvas();
+		updateCanvas(); })
+	.fail(function (error) {
+		console.log(error);
 	});
 }
 

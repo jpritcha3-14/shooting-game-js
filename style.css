@@ -27,6 +27,29 @@ h3 {
 	font-size: 1.5em;
 	margin-bottom: 0.5em;
 }
+h3.meet {
+	color: blue;
+}
+
+ul {
+	list-style-type: none;
+	padding: 0;
+	color: blue;
+	text-align: left;
+}
+li {
+	padding-left: 5px;
+}
+li.description {
+	padding-right: 5px;
+	font-weight: normal;
+	font-size: 0.8em;
+	color: red;
+}
+li.bullet {
+	padding-left: 1.5em;
+	text-indent: -1.2em;
+}
 #labels {
 	color: blue;
 }
@@ -49,4 +72,26 @@ h3 {
 }
 .control_description {
 	font-size: 1.2em;	
+}
+td.cast {
+	width: 145px;
+	color: red;
+	font-size: 1.2em;
+	border-right: 1px solid blue;
+}
+td.cast_description {
+	width: 145;
+	color: red;
+	font-size: 1em;
+	vertical-align: top;
+	border-right: 1px solid blue;
+	border-top: 1px solid blue;
+	border-bottom: 1px solid blue;
+}
+td.first {
+	border-left: 1px solid blue;
+}
+td.top {
+	border-top: 1px solid blue;
+	padding-top: 5px;
 }
