@@ -3,7 +3,7 @@
 //~~~~~~~~~~~~~~~~~~~~~//
 
 var canvas = {width: 0, height:0};
-var waveData;
+var waveData; 
 var bomb;
 var ship;
 var display;
@@ -478,11 +478,17 @@ updatePowerup = () => {
 	if (powerupPool.active == -1) {
 		powerupPool.time -= 1;
 		if (powerupPool.time <= 0) {
-			console.log('spawn powerup');
-			powerupPool.active = getRandomInt(powerupPool.powerups.length) - 1;
+			powerupPool.time = powerupPool.timeout;
+			let aliensLeft = Object.values(waveData.leftInCurWave).reduce((a, b) => a + b);
+			if (aliensLeft > 10) {
+				powerupPool.active = getRandomInt(powerupPool.powerups.length) - 1;
+			} else if (ship.missiles < 5) {
+				powerupPool.active = 0;
+			} else {
+				return;
+			}
 			console.log(powerupPool.active);
 			powerupPool.powerups[powerupPool.active].initialize();
-			powerupPool.time = powerupPool.timeout;
 		}
 	} else {
 		let cur = powerupPool.powerups[powerupPool.active];
