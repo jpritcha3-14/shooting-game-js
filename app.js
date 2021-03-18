@@ -57,6 +57,10 @@ const Sprite = {
 	y: 0,
 };
 
+//~~~~~~~~~~~~~~~~~~~//
+// Support Functions //
+//~~~~~~~~~~~~~~~~~~~//
+
 // Between 1 and Max
 getRandomInt = (max) => {
 	return Math.ceil(Math.random() * Math.ceil(max));
@@ -68,13 +72,132 @@ detectCollision = (a, b, wiggle=0) => {
 		&& a.x < b.x + b.img.width - wiggle 
 		&& a.y > b.y - a.img.height + wiggle
 		&& a.y < b.y + b.img.height - wiggle);
-}
+};
 
 // Random choice from an array
 choose = (choices) => {
   let index = Math.floor(Math.random() * choices.length);
   return choices[index];
-}
+};
+
+// Distance metric between 2 points
+getDist2 = (x1, y1, x2, y2) => {
+	return (Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
+};
+
+spriteFactory = (image) => {
+	let sprite = Object.assign({img: new Image()}, Sprite);
+	sprite.img.src = image;
+	return sprite;
+};
+
+starFactory = (height=-5) => {
+	let cur = {
+		x: getRandomInt(canvas.width),
+		y: height,
+		sz: choose([1,2,2,3,3]),
+	};
+	cur.speed = (cur.sz == 1) ? choose([0.5, 1, 1]) : (cur.sz == 2) ? choose([1, 1.5, 1.5]) : choose([1.5, 1.5, 2]);
+	return cur;
+};
+
+alienFactory = (type) => {
+	let alien = Object.assign({}, type, {img: new Image()});
+	alien.img.src = alien.src;
+	alien.initialize();
+	return alien;
+};
+
+populateStars = () => {
+	let i = 0;
+	for (i = -5; i < canvas.height; i += 10) {
+		stars.push(starFactory(i));
+	}
+	stars.reverse();
+};
+
+populateMissilePool = (count=10, cooldownTime=10, image='missile.png', speed=8 ) => {
+	missilePool.cooldownTime = cooldownTime;
+	missilePool.speed = speed;
+	let i = 0;
+	for (i = 0; i < count; i++) {
+		let missile = Object.assign({img: new Image()}, Sprite);
+		missile.img.src = image;
+		missile.exploded = false;
+		missilePool.ready.push(missile)
+	}
+};
+
+populateAlientPools = (types, numeach=10) => {
+	types.forEach(type => {
+		alienPools[type] = [];
+		alienPools.onCanvasCount[type] = 0;
+		let i = 0;
+		for (i = 0; i < numeach; i++) {
+			alienPools[type].push(alienFactory(Aliens[type]));
+		}
+	});
+};
+
+populateExplosionPool = (num=10, img='explosion.png', life=10) => {
+	let i = 0;
+	for (i = 0; i < num; i++) {
+		let explosion = Object.assign({}, {img: new Image()}, Sprite);
+		explosion.life = 10;
+		explosion.ttl = 0;
+		explosion.img.src = img;
+		explosionPool.queue.push(explosion)
+	}
+};
+
+populatePowerupPool = () => {
+	let numMissiles = 10;
+	let numShield = 3;
+	let numBomb = 1;
+	for (p in Powerups) {
+		let maxNum = (p == "Missiles") ? numMissiles : (p == "Shield") ? numShield : numBomb;
+		let i = 0;
+		for (i = 0; i < maxNum; i++) {
+			let cur = Object.assign({img: new Image()}, Powerups[p]);
+			cur.img.src = cur.src;
+			console.log(p);
+			powerupPool.powerups.push(cur);
+		}
+	}
+};
+
+resetShip = () => {
+	ship.x = canvas.width / 2 - ship.img.width / 2;
+	ship.y = canvas.height - ship.img.height;
+	ship.alive = true;
+	ship.missiles = 50;
+	ship.bombs = 1;
+	ship.shield.power = 20;
+	ship.score = 0;
+};
+
+initializeShip = () => {
+	ship = Object.assign(spriteFactory('ship.png'), {
+		speed: 5, 
+		alive: true, 
+		missiles: 50, 
+		bombs: 1, 
+		shield: {
+			active: false,
+			power: 20,
+			drain: 10,
+			drainTime: 10,
+		}, 
+		score: 0 
+	});
+	ship.shield.img = new Image();
+	ship.shield.img.src = 'ship_shield.png';
+	resetShip();
+};
+
+//~~~~~~~~~~~~~~~~~~~~//
+// Object Definitions //
+//~~~~~~~~~~~~~~~~~~~~//
 
 var BasePowerup = {
 	x: 0,
@@ -103,7 +226,6 @@ var Powerups = {
 		pickup: function () {
 			ship.missiles += 20;
 			ship.missiles = (ship.missiles > 100) ? 100 : ship.missiles;
-			console.log('got missiles');
 		}
 	}),
 	Shield: Object.assign({}, BasePowerup, {
@@ -111,7 +233,6 @@ var Powerups = {
 		pickup: function () {
 			ship.shield.power += 15;
 			ship.shield.power = (ship.shield.power > 100) ? 100 : ship.shield.power;
-			console.log('got shield');
 		}
 	}),
 	Bomb: Object.assign({}, BasePowerup, {
@@ -119,7 +240,6 @@ var Powerups = {
 		pickup: function () {
 			ship.bombs += 1;
 			ship.bombs = (ship.bombs > 3) ? 3 : ship.bombs;
-			console.log('got bomb');
 		}
 	})
 };
@@ -223,127 +343,6 @@ var Aliens = {
 		src: "green.png"
 	})
 };
-
-//~~~~~~~~~~~~~~~~~~~//
-// Support Functions //
-//~~~~~~~~~~~~~~~~~~~//
-
-
-// Distance metric between 2 points
-getDist2 = (x1, y1, x2, y2) => {
-	return (Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
-}
-
-
-spriteFactory = (image) => {
-	let sprite = Object.assign({img: new Image()}, Sprite);
-	sprite.img.src = image;
-	return sprite;
-}
-
-starFactory = (height=-5) => {
-	let cur = {
-		x: getRandomInt(canvas.width),
-		y: height,
-		sz: choose([1,2,2,3,3]),
-	};
-	cur.speed = (cur.sz == 1) ? choose([0.5, 1, 1]) : (cur.sz == 2) ? choose([1, 1.5, 1.5]) : choose([1.5, 1.5, 2]);
-	return cur;
-}
-
-alienFactory = (type) => {
-	let alien = Object.assign({}, type, {img: new Image()});
-	alien.img.src = alien.src;
-	alien.initialize();
-	return alien;
-}
-
-populateStars = () => {
-	let i = 0;
-	for (i = -5; i < canvas.height; i += 10) {
-		stars.push(starFactory(i));
-	}
-	stars.reverse();
-}
-
-populateMissilePool = (count=10, cooldownTime=10, image='missile.png', speed=8 ) => {
-	missilePool.cooldownTime = cooldownTime;
-	missilePool.speed = speed;
-	let i = 0;
-	for (i = 0; i < count; i++) {
-		let missile = Object.assign({img: new Image()}, Sprite);
-		missile.img.src = image;
-		missile.exploded = false;
-		missilePool.ready.push(missile)
-	}
-}
-
-populateAlientPools = (types, numeach=10) => {
-	types.forEach(type => {
-		alienPools[type] = [];
-		alienPools.onCanvasCount[type] = 0;
-		let i = 0;
-		for (i = 0; i < numeach; i++) {
-			alienPools[type].push(alienFactory(Aliens[type]));
-		}
-	});
-}
-
-populateExplosionPool = (num=10, img='explosion.png', life=10) => {
-	let i = 0;
-	for (i = 0; i < num; i++) {
-		let explosion = Object.assign({}, {img: new Image()}, Sprite);
-		explosion.life = 10;
-		explosion.ttl = 0;
-		explosion.img.src = img;
-		explosionPool.queue.push(explosion)
-	}
-}
-
-populatePowerupPool = () => {
-	let numMissiles = 10;
-	let numShield = 3;
-	let numBomb = 1;
-	for (p in Powerups) {
-		let maxNum = (p == "Missiles") ? numMissiles : (p == "Shield") ? numShield : numBomb;
-		let i = 0;
-		for (i = 0; i < maxNum; i++) {
-			let cur = Object.assign({img: new Image()}, Powerups[p]);
-			cur.img.src = cur.src;
-			console.log(p);
-			powerupPool.powerups.push(cur);
-		}
-	}
-}
-
-resetShip = () => {
-	ship.x = canvas.width / 2 - ship.img.width / 2;
-	ship.y = canvas.height - ship.img.height;
-	ship.alive = true;
-	ship.missiles = 50;
-	ship.bombs = 1;
-	ship.shield.power = 20;
-	ship.score = 0;
-}
-
-initializeShip = () => {
-	ship = Object.assign(spriteFactory('ship.png'), {
-		speed: 5, 
-		alive: true, 
-		missiles: 50, 
-		bombs: 1, 
-		shield: {
-			active: false,
-			power: 20,
-			drain: 6,
-			drainTime: 6,
-		}, 
-		score: 0 
-	});
-	ship.shield.img = new Image();
-	ship.shield.img.src = 'ship_shield.png';
-	resetShip();
-}
 
 //~~~~~~~~~~~~~~~~//
 // Draw Functions //
@@ -483,7 +482,7 @@ updatePowerup = () => {
 			let aliensLeft = Object.values(waveData.leftInCurWave).reduce((a, b) => a + b);
 			if (aliensLeft > 10) {
 				powerupPool.active = getRandomInt(powerupPool.powerups.length) - 1;
-			} else if (ship.missiles < 5) {
+			} else if (ship.missiles < 10) {
 				powerupPool.active = 0;
 			} else {
 				return;
@@ -704,9 +703,9 @@ updateDisplay = () => {
 	display.score.innerHTML = ship.score;
 }
 
-//~~~~~~~~~~~~//
-// Main Logic //
-//~~~~~~~~~~~~//
+//~~~~~~~~~~~~~~~~~~~~//
+// Key Event Handlers //
+//~~~~~~~~~~~~~~~~~~~~//
 
 keyPressed = (event) => {
 	if (keys.has(event.key.toLowerCase())) {
@@ -730,6 +729,10 @@ clearKeyEvents = (event) => {
 		keyState[key] = false;
 	}
 }
+
+//~~~~~~~~~~~~//
+// Main Logic //
+//~~~~~~~~~~~~//
 
 restart = () => {
 	bomb = null;
