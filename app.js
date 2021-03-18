@@ -10,7 +10,7 @@ var display;
 
 const root2 = Math.sqrt(2);
 const keys = new Set();
-["w", "a", "s", "d", "f", "r", "c", " ", "shift"].forEach(item => keys.add(item));
+['w', 'a', 's', 'd', 'f', 'r', 'c', ' ', 'shift'].forEach(item => keys.add(item));
 
 // Only updated by key events
 var keyState = {
@@ -21,8 +21,8 @@ var keyState = {
 	f: false,
 	r: false,
 	c: false,
-	" ": false,
-	"shift": false
+	' ': false,
+	'shift': false
 };
 
 var stars = [];
@@ -116,7 +116,7 @@ populateStars = () => {
 	stars.reverse();
 };
 
-populateMissilePool = (count=10, cooldownTime=10, image='missile.png', speed=8 ) => {
+populateMissilePool = (count=10, cooldownTime=10, image='imgs/missile.png', speed=8 ) => {
 	missilePool.cooldownTime = cooldownTime;
 	missilePool.speed = speed;
 	let i = 0;
@@ -139,7 +139,7 @@ populateAlientPools = (types, numeach=10) => {
 	});
 };
 
-populateExplosionPool = (num=10, img='explosion.png', life=10) => {
+populateExplosionPool = (num=10, img='imgs/explosion.png', life=10) => {
 	let i = 0;
 	for (i = 0; i < num; i++) {
 		let explosion = Object.assign({}, {img: new Image()}, Sprite);
@@ -155,7 +155,7 @@ populatePowerupPool = () => {
 	let numShield = 3;
 	let numBomb = 1;
 	for (p in Powerups) {
-		let maxNum = (p == "Missiles") ? numMissiles : (p == "Shield") ? numShield : numBomb;
+		let maxNum = (p == 'Missiles') ? numMissiles : (p == 'Shield') ? numShield : numBomb;
 		let i = 0;
 		for (i = 0; i < maxNum; i++) {
 			let cur = Object.assign({img: new Image()}, Powerups[p]);
@@ -177,7 +177,7 @@ resetShip = () => {
 };
 
 initializeShip = () => {
-	ship = Object.assign(spriteFactory('ship.png'), {
+	ship = Object.assign(spriteFactory('imgs/ship.png'), {
 		speed: 5, 
 		alive: true, 
 		missiles: 50, 
@@ -191,7 +191,7 @@ initializeShip = () => {
 		score: 0 
 	});
 	ship.shield.img = new Image();
-	ship.shield.img.src = 'ship_shield.png';
+	ship.shield.img.src = 'imgs/ship_shield.png';
 	resetShip();
 };
 
@@ -222,21 +222,21 @@ var BasePowerup = {
 
 var Powerups = {
 	Missiles: Object.assign({}, BasePowerup, {
-		src: "missiles.png",
+		src: 'imgs/missiles.png',
 		pickup: function () {
 			ship.missiles += 20;
 			ship.missiles = (ship.missiles > 100) ? 100 : ship.missiles;
 		}
 	}),
 	Shield: Object.assign({}, BasePowerup, {
-		src: "shield.png",
+		src: 'imgs/shield.png',
 		pickup: function () {
 			ship.shield.power += 15;
 			ship.shield.power = (ship.shield.power > 100) ? 100 : ship.shield.power;
 		}
 	}),
 	Bomb: Object.assign({}, BasePowerup, {
-		src: "bomb.png",
+		src: 'imgs/bomb.png',
 		pickup: function () {
 			ship.bombs += 1;
 			ship.bombs = (ship.bombs > 3) ? 3 : ship.bombs;
@@ -268,15 +268,15 @@ var BaseAlien = {
 
 var Aliens = {
 	Simple: Object.assign({}, BaseAlien, {
-		type: "Simple",
+		type: 'Simple',
 		update: function () {
 			this.y += this.speed;
 		},
 		speed: 3,
-		src: "red.png"
+		src: 'imgs/red.png'
 	}),
 	Siney: Object.assign({}, BaseAlien, {
-		type: "Siney",
+		type: 'Siney',
 		magnitude: 0,
 		phase: 0,
 		frequency: 0,
@@ -290,10 +290,10 @@ var Aliens = {
 			this.frequency = 10 + getRandomInt(30);
 		},
 		speed: 3,
-		src: "blue.png"
+		src: 'imgs/blue.png'
 	}),
 	Crawly: Object.assign({}, BaseAlien, {
-		type: "Crawly",
+		type: 'Crawly',
 		update: function () {
 			this.x += this.speed;
 		},
@@ -309,18 +309,18 @@ var Aliens = {
 			return ((this.x > canvas.width + 1) || (this.x < -this.img.width));
 		},
 		baseSpeed: 3,
-		src: "yellow.png"
+		src: 'imgs/yellow.png'
 	}),
 	Fasty: Object.assign({}, BaseAlien, {
-		type: "Fasty",
+		type: 'Fasty',
 		update: function () {
 			this.y += this.speed;
 		},
 		speed: 6,
-		src: "white.png"
+		src: 'imgs/white.png'
 	}),
 	Circley: Object.assign({}, BaseAlien, {
-		type: "Circley",
+		type: 'Circley',
 		rotation: 0.1,
 		theta: 0,
 		r: 0,
@@ -340,7 +340,7 @@ var Aliens = {
 			return this.offsetY > canvas.height && this.y > canvas.height;
 		},
 		speed: 2,
-		src: "green.png"
+		src: 'imgs/green.png'
 	})
 };
 
@@ -349,7 +349,7 @@ var Aliens = {
 //~~~~~~~~~~~~~~~~//
 
 drawStars = (ctx) => {
-	ctx.fillStyle = "yellow";
+	ctx.fillStyle = 'yellow';
 	let i = 0;
 	for (i = 0; i < stars.length; i++) {
 		ctx.save();
@@ -365,7 +365,7 @@ drawMissiles = (ctx) => {
 
 drawBomb = (ctx) => {
 	if (bomb) {
-		ctx.strokeStyle ="blue";
+		ctx.strokeStyle ='blue';
 		ctx.lineWidth = 3;
 		ctx.beginPath();
 		ctx.arc(bomb.x, bomb.y, bomb.r, 0, 2 * Math.PI);
@@ -401,16 +401,16 @@ drawShip = (ctx) => {
 }
 
 drawGameOver = (ctx) => {
-	ctx.font = "bold 30px Courier New";
-	ctx.fillStyle = "red";
-	ctx.textAlign = "center";
-	ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2);
+	ctx.font = 'bold 30px Courier New';
+	ctx.fillStyle = 'red';
+	ctx.textAlign = 'center';
+	ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2);
 }
 
 drawWaveNumber = (ctx) => {
-	ctx.font = "bold 30px Courier New";
-	ctx.fillStyle = "blue";
-	ctx.textAlign = "center";
+	ctx.font = 'bold 30px Courier New';
+	ctx.fillStyle = 'blue';
+	ctx.textAlign = 'center';
 	ctx.fillText(`WAVE ${waveData.curWave + 1}`, canvas.width/2, canvas.height/2);
 }
 
@@ -435,7 +435,7 @@ updateMissiles = () => {
 	}
 
 	// Launch Missile
-	if (keyState[" "] && ship.alive && ship.missiles > 0 && missilePool.cooldown == 0 && missilePool.ready.length > 0) {
+	if (keyState[' '] && ship.alive && ship.missiles > 0 && missilePool.cooldown == 0 && missilePool.ready.length > 0) {
 		missilePool.ready[0].x = ship.x + ship.img.width / 2 - missilePool.ready[0].img.width / 2;
 		missilePool.ready[0].y = ship.y;
 		missilePool.ready[0].exploded = false;
@@ -761,17 +761,17 @@ restart = () => {
 init = () => {
 	canvas = document.getElementById('gameArea');
 	display = {
-		missiles: document.getElementById("missiles"),
-		bombs: document.getElementById("bombs"),
-		shield: document.getElementById("shield"),
-		score: document.getElementById("score")
+		missiles: document.getElementById('missiles'),
+		bombs: document.getElementById('bombs'),
+		shield: document.getElementById('shield'),
+		score: document.getElementById('score')
 	};
 	initializeShip();
 	populateStars();
 	populateMissilePool();
 	populateExplosionPool();
 	populatePowerupPool();
-	$.getJSON("waveData.json")
+	$.getJSON('waveData.json')
 	.done(function (data) {
 		waveData = data;
 		populateAlientPools(waveData.types);
@@ -807,7 +807,7 @@ updateState = () => {
 updateCanvas = () => {
 	window.requestAnimationFrame(updateCanvas);
 	let ctx = canvas.getContext('2d');
-	ctx.fillStyle = "black";
+	ctx.fillStyle = 'black';
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	drawStars(ctx);
 	drawMissiles(ctx);
@@ -825,6 +825,6 @@ updateCanvas = () => {
 }
 
 window.onload = init;
-document.addEventListener("keydown", keyPressed);
-document.addEventListener("keyup", keyReleased);
-window.addEventListener("focus", clearKeyEvents);
+document.addEventListener('keydown', keyPressed);
+document.addEventListener('keyup', keyReleased);
+window.addEventListener('focus', clearKeyEvents);
