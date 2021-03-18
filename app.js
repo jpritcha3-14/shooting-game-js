@@ -679,16 +679,16 @@ keyPressed = (event) => {
 		
 		keyState[event.key.toLowerCase()] = true;
 	}
-	console.log(event.key.toLowerCase());
-	console.log(keyState);
+	// Prevent space bar from scrolling page
+	if (event.keyCode == 32 && event.target == document.body) {
+		event.preventDefault();
+	}
 }
 
 keyReleased = (event) => {
 	if (keys.has(event.key.toLowerCase())) {
 		keyState[event.key.toLowerCase()] = false;
 	}
-	console.log(event.key.toLowerCase());
-	console.log(keyState);
 }
 
 clearKeyEvents = (event) => {

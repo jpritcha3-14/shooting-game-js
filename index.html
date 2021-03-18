@@ -1,41 +1,54 @@
 <!DOCTYPE html>
 <html>
 	<head>
-    		<meta charset="utf-8"/>
+    		<meta charset='utf-8'/>
     		<title>Shooting Game</title>
-    		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    		<script src="app.js"></script>
-		<link rel="stylesheet" href="style.css">
+    		<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
+    		<script src='app.js'></script>
+		<link rel='stylesheet' href='style.css'>
 	</head>
   	<body>
-		<div class="content">
-			<img src="title.png" alt="title">
-  			<canvas id="gameArea" width="750" height="500"></canvas>
-  			<table id="values">
+		<div class='content'>
+			<img src='title.png' alt='title'>
+  			<canvas id='gameArea' width='750' height='500'></canvas>
+  			<table id='values'>
 	  			<tr>
-		  			<td id="missiles"></td> 
-		  			<td id="bombs"></td> 
-		  			<td id="shield"></td> 
-		  			<td id="score"></td> 
+		  			<td id='score'></td> 
+		  			<td id='missiles'></td> 
+		  			<td id='shield'></td> 
+		  			<td id='bombs'></td> 
 	  			</tr>
   			</table>
-  			<table id="labels">
+  			<table id='labels'>
 	  			<tr>
-		  			<td>Missiles</td> 
-		  			<td>Bombs</td> 
-		  			<td>Shield</td> 
-		  			<td>Score</td> 
+		  			<td id='score_label'>SCORE</td> 
+					<td><img src='missiles.png', alt='missiles'></td> 
+					<td><img src='shield.png', alt='shield'</td> 
+					<td><img src='bomb.png', alt='bomb'</td> 
 	  			</tr>
-  			</table>
-			<h3>Controls</h3>
-    			<ul>
-	    			<li>WASD: move ship</>
-	    			<li>Space: fire missiles</>
-	    			<li>b: drop bomb</>
-	    			<li>r: restart on game over</>
-	    			<li>shift: activate shield</>
 
-    			</ul>
+  			</table>
+			<h3>CONTROLS</h3>
+  			<table id='controls'>
+	  			<tr>
+					<td class='control_label'>WASD</td> 
+					<td class='control_label'>SPACE</td> 
+					<td class='control_label'>SHIFT</td> 
+					<td class='control_label'>B</td> 
+	  			</tr>
+	  			<tr>
+		  			<td class='control_description'>MOVE SHIP</td> 
+		  			<td class='control_description'>FIRE MISSILES</td> 
+		  			<td class='control_description'>ACTIVATE SHIELD</td> 
+		  			<td class='control_description'>DROP BOMBS<td> 
+	  			</tr>
+	  			<tr>
+					<td class='control_label' colspan='4'>R</td> 
+	  			</tr>
+	  			<tr>
+					<td class='control_description' colspan='4'>RESTART AFTER GAME OVER</td> 
+	  			</tr>
+  			</table>
 		</div>
 	</body>
 </html>

@@ -16,19 +16,25 @@ table {
 canvas {
 	border: 5px solid blue;
 }
-   			td { 
+td { 
 	width: 185px;
- 			font-size: 1.5em;
+	font-size: 1.5em;
 	text-align: center;
-      }
-      h3 {
+}
+h3 {
 	color: red;
-      }
-      ul {
-	color: red;
-      }
+	text-align: center;
+	font-size: 1.5em;
+	margin-bottom: 0.5em;
+}
 #labels {
 	color: blue;
+}
+#controls {
+	color: red;
+}
+#score_label {
+	vertical-align: top;
 }
 #values {
 	color: red;
@@ -36,4 +42,11 @@ canvas {
 .content {
 	max-width: 760px;
 	margin: auto;
+}
+.control_label {
+	color: blue;
+	font-size: 1.2em;	
+}
+.control_description {
+	font-size: 1.2em;	
 }
