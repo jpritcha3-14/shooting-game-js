@@ -48,7 +48,7 @@ var powerupPool = {
  
 var alienPools = {
 	onCanvas: [],
-	onCanvasCount: {}
+	onCanvasCount: {},
 };
 
 const Sprite = {
@@ -398,6 +398,13 @@ drawGameOver = (ctx) => {
 	ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2);
 }
 
+drawWaveNumber = (ctx) => {
+	ctx.font = "bold 30px Courier New";
+	ctx.fillStyle = "blue";
+	ctx.textAlign = "center";
+	ctx.fillText(`WAVE ${waveData.curWave + 1}`, canvas.width/2, canvas.height/2);
+}
+
 //~~~~~~~~~~~~~~~~~~//
 // Update Functions //
 //~~~~~~~~~~~~~~~~~~//
@@ -535,13 +542,18 @@ updateShip = () => {
 updateAliens = () => {
 	
 	// Determine whether to add a new alien to the canvas
-	if (waveData.spacingTimeout > 0) {
+	if (waveData.newWaveTime > 0) {
+		waveData.newWaveTime -= 1;
+		if (waveData.newWaveTime <= 0) {
+			waveData.newWave = false;
+		}
+	} else if (waveData.spacingTimeout > 0) {
 		waveData.spacingTimeout -= 1;
 	} else {
 		let typesLeft = [];
 		let canSpawn = [];
 		let newType;
-		waveData.spacingTimeout = waveData.spacing[waveData.curWave];
+		waveData.spacingTimeout = waveData.waves[waveData.curWave].spacing;
 		// Create array of types with remaining values > 0;
 		for (t in waveData.leftInCurWave) {
 			if (waveData.leftInCurWave[t]> 0) {
@@ -554,8 +566,13 @@ updateAliens = () => {
 
 		// If empty, move to next wave
 		if (typesLeft.length == 0) {
-			waveData.curWave = 0; // CHANGE THIS TO INCREMENT WHEN NEW WAVES/ALIENS IMPLEMENTED!!!
-			waveData.leftInCurWave = Object.assign({}, waveData.waves[waveData.curWave]);
+			waveData.curWave += 1; 
+			if (waveData.curWave == waveData.waves.length) {
+				waveData.curWave = 0;
+			}
+			waveData.newWave = true;
+			waveData.newWaveTime = waveData.newWaveTimeout;
+			waveData.leftInCurWave = Object.assign({}, waveData.waves[waveData.curWave].aliens);
 			return;
 		}
 
@@ -711,11 +728,13 @@ restart = () => {
 	waveData.types.forEach(t => { 
 		alienPools.onCanvasCount[t] = 0;
 	});
-	waveData.leftInCurWave = Object.assign({}, waveData.waves[0]); 
+	waveData.leftInCurWave = Object.assign({}, waveData.waves[0].aliens); 
 	waveData.curWave = 0;
 	clearKeyEvents();
 	powerupPool.active = -1;
 	powerupPool.time = powerupPool.timeout;
+	waveData.newWave = true;
+	waveData.newWaveTime = waveData.newWaveTimeout;
 	resetShip();
 }
 
@@ -737,10 +756,13 @@ init = () => {
 		populateAlientPools(waveData.types);
 		waveData.curWave = 0;
 		waveData.spacingTimeout = 0;
-		waveData.leftInCurWave = Object.assign({}, waveData.waves[0]);
+		waveData.newWaveTimeout = 60;
+		waveData.newWaveTime = 60;
+		waveData.newWave = true;
+		waveData.leftInCurWave = Object.assign({}, waveData.waves[0].aliens);
 		updateState();
 		updateCanvas();
-});
+	});
 }
 
 // Main Update Function, called at regular interval
@@ -773,6 +795,9 @@ updateCanvas = () => {
 	drawExplosions(ctx);
 	if (!ship.alive) {
 		drawGameOver(ctx);
+	}
+	if (waveData.newWave) {
+		drawWaveNumber(ctx);
 	}
 }
 

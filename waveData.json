@@ -1,5 +1,18 @@
 {
 	"types": ["Simple", "Siney", "Crawly", "Fasty", "Circly"],
-	"waves": [{"Simple":4, "Siney":4, "Crawly": 4, "Fasty": 4, "Circly": 4}],
-	"spacing": [20]
+	"waves":[
+		{ "aliens": {	"Simple":4 },
+		   "spacing": 20
+		},
+		{ "aliens": {	"Simple":4, 
+		   		"Siney":4, 
+		   		"Crawly": 4, 
+		   		"Fasty": 4, 
+		   		"Circly": 4 },
+		   "spacing": 20
+		},
+		{ "aliens": {	"Simple":4 },
+		   "spacing": 20
+		}
+	]
 }
