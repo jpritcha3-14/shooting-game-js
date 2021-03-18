@@ -9,7 +9,9 @@
 	</head>
   	<body>
 		<div class='content'>
-			<img src='title.png' alt='title'>
+			<div class='title'>
+				<img src='title.png' alt='title'>
+			</div>
   			<canvas id='gameArea' width='750' height='500'></canvas>
   			<table id='values'>
 	  			<tr>
@@ -43,30 +45,30 @@
 		  			<td class='control_description'>DROP BOMBS<td> 
 	  			</tr>
 	  			<tr>
-					<td class='control_label' colspan='4'>R</td> 
+					<td class='control_label' colspan='4'>R / C</td> 
 	  			</tr>
 	  			<tr>
-					<td class='control_description' colspan='4'>RESTART AFTER GAME OVER</td> 
+					<td class='control_description' colspan='4'>RESTART AT WAVE 1 (R) OR 5-WAVE CHECKPOINT (C) ON GAME OVER</td> 
 	  			</tr>
   			</table>
 			<h3 class='meet'>MEET THE CAST</h3>
   			<table>
 	  			<tr>
-					<td class='cast top first'><img src='red.png', alt='simple'></td> 
-					<td class='cast top '><img src='blue.png', alt='siney'</td> 
-					<td class='cast top '><img src='yellow.png', alt='crawly'</td> 
-					<td class='cast top '><img src='white.png', alt='fasty'</td> 
-					<td class='cast top'><img src='green.png', alt='circley'</td> 
+					<td class='cast top'><img src='red.png', alt='simple'></td> 
+					<td class='cast top'><img src='blue.png', alt='siney'</td> 
+					<td class='cast top'><img src='yellow.png', alt='crawly'</td> 
+					<td class='cast top'><img src='white.png', alt='fasty'</td> 
+					<td class='cast top last'><img src='green.png', alt='circley'</td> 
 	  			</tr>
 	  			<tr>
-					<td class='cast first'>SIMPLE</td> 
+					<td class='cast'>SIMPLE</td> 
 					<td class='cast'>SINEY</td> 
 					<td class='cast'>CRAWLEY</td> 
 					<td class='cast'>FASTY</td> 
-					<td class='cast'>CIRCLEY</td> 
+					<td class='cast last'>CIRCLEY</td> 
 	  			</tr>
 	  			<tr>
-					<td class='cast_description first'>
+					<td class='cast_description'>
 						<ul>
 							<li>BEHAVIOR</li>
 							<li class='description'>MARCHING BLINDLY FORWARD WITHOUT A CARE</li>
@@ -129,7 +131,7 @@
 							<li class='description bullet'>* TURTLES</li>
 						</ul>
 					</td> 
-					<td class='cast_description'> 
+					<td class='cast_description last'> 
 						<ul>
 							<li>BEHAVIOR</li>
 							<li class='description'>WELL ROUNDED</li>

@@ -10,7 +10,7 @@ var display;
 
 const root2 = Math.sqrt(2);
 const keys = new Set();
-["w", "a", "s", "d", "f", "r", " ", "shift"].forEach(item => keys.add(item));
+["w", "a", "s", "d", "f", "r", "c", " ", "shift"].forEach(item => keys.add(item));
 
 // Only updated by key events
 var keyState = {
@@ -20,6 +20,7 @@ var keyState = {
 	d: false,
 	f: false,
 	r: false,
+	c: false,
 	" ": false,
 	"shift": false
 };
@@ -100,7 +101,7 @@ var Powerups = {
 	Missiles: Object.assign({}, BasePowerup, {
 		src: "missiles.png",
 		pickup: function () {
-			ship.missiles += 15;
+			ship.missiles += 20;
 			ship.missiles = (ship.missiles > 100) ? 100 : ship.missiles;
 			console.log('got missiles');
 		}
@@ -108,7 +109,7 @@ var Powerups = {
 	Shield: Object.assign({}, BasePowerup, {
 		src: "shield.png",
 		pickup: function () {
-			ship.shield.power += 10;
+			ship.shield.power += 15;
 			ship.shield.power = (ship.shield.power > 100) ? 100 : ship.shield.power;
 			console.log('got shield');
 		}
@@ -198,8 +199,8 @@ var Aliens = {
 		speed: 6,
 		src: "white.png"
 	}),
-	Circly: Object.assign({}, BaseAlien, {
-		type: "Circly",
+	Circley: Object.assign({}, BaseAlien, {
+		type: "Circley",
 		rotation: 0.1,
 		theta: 0,
 		r: 0,
@@ -501,7 +502,7 @@ updatePowerup = () => {
 
 updateShip = () => {
 	if (!ship.alive) {
-		if (keyState.r) { restart(); }
+		if (keyState.r || keyState.c) { restart(); }
 		return;
 	}
 	// Cardinal Directions
@@ -744,7 +745,7 @@ restart = () => {
 	waveData.types.forEach(t => { 
 		alienPools.onCanvasCount[t] = 0;
 	});
-	waveData.curWave = Math.floor(waveData.curWave/5) * 5;
+	waveData.curWave = (keyState.c) ? Math.floor(waveData.curWave/5) * 5 : 0;
 	waveData.leftInCurWave = Object.assign({}, waveData.waves[waveData.curWave].aliens); 
 	clearKeyEvents();
 	powerupPool.active = -1;

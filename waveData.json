@@ -1,5 +1,5 @@
 {
-	"types": ["Simple", "Siney", "Crawly", "Fasty", "Circly"],
+	"types": ["Simple", "Siney", "Crawly", "Fasty", "Circley"],
 	"waves":[
 		{ "aliens": {	"Simple": 10 },
 		   "spacing": 20
@@ -13,7 +13,7 @@
 		{ "aliens": {	"Fasty": 10 },
 		   "spacing": 20
 		},
-		{ "aliens": {	"Circly": 10 },
+		{ "aliens": {	"Circley": 10 },
 		   "spacing": 20
 		},
 		{ "aliens": {	"Simple": 10 ,
@@ -35,12 +35,12 @@
 		   		"Siney": 10, 
 		   		"Crawly": 10, 
 		   		"Fasty": 10, 
-		   		"Circly": 10 },
+		   		"Circley": 10 },
 		   "spacing": 20
 		},
 		{ "aliens": {	"Siney": 20, 
 		   		"Fasty": 20, 
-		   		"Circly": 20 },
+		   		"Circley": 20 },
 		   "spacing": 20
 		},
 		{ "aliens": {	"Crawly": 25, 
@@ -48,13 +48,13 @@
 		   		"Fasty": 25 },
 		   "spacing": 15 
 		},
-		{ "aliens": {	"Circly": 25, 
+		{ "aliens": {	"Circley": 25, 
 		   		"Siney": 25, 
 		   		"Simple": 25, 
 		   		"Fasty": 25 },
 		   "spacing": 15 
 		},
-		{ "aliens": {	"Circly": 30, 
+		{ "aliens": {	"Circley": 30, 
 		   		"Siney": 30, 
 		   		"Fasty": 30 },
 		   "spacing": 15 
@@ -62,7 +62,7 @@
 		{ "aliens": {	"Siney": 25, 
 		   		"Crawly": 25, 
 		   		"Fasty": 25, 
-		   		"Circly": 25 },
+		   		"Circley": 25 },
 		   "spacing": 15 
 		}
 	]

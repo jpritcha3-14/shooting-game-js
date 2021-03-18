@@ -25,7 +25,9 @@ h3 {
 	color: red;
 	text-align: center;
 	font-size: 1.5em;
+	margin-top: 0.5em;
 	margin-bottom: 0.5em;
+	border-top: 1px solid blue;
 }
 h3.meet {
 	color: blue;
@@ -64,7 +66,16 @@ li.bullet {
 }
 .content {
 	max-width: 760px;
+	margin-left: auto;
+	margin-right: auto;
+	border-left: 1px solid blue;
+	border-right: 1px solid blue;
+}
+.title {
 	margin: auto;
+	border-left: 5px solid blue;
+	border-right: 5px solid blue;
+	border-top: 5px solid blue;
 }
 .control_label {
 	color: blue;
@@ -85,11 +96,10 @@ td.cast_description {
 	font-size: 1em;
 	vertical-align: top;
 	border-right: 1px solid blue;
-	border-top: 1px solid blue;
 	border-bottom: 1px solid blue;
 }
-td.first {
-	border-left: 1px solid blue;
+td.last {
+	border-right: none;
 }
 td.top {
 	border-top: 1px solid blue;
