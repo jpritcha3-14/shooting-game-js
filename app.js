@@ -97,10 +97,10 @@ var BasePowerup = {
 }
 
 var Powerups = {
-	Misiles: Object.assign({}, BasePowerup, {
+	Missiles: Object.assign({}, BasePowerup, {
 		src: "missiles.png",
 		pickup: function () {
-			ship.missiles += 10;
+			ship.missiles += 15;
 			ship.missiles = (ship.missiles > 100) ? 100 : ship.missiles;
 			console.log('got missiles');
 		}
@@ -275,7 +275,7 @@ populateMissilePool = (count=10, cooldownTime=10, image='missile.png', speed=8 )
 	}
 }
 
-populateAlientPools = (types, numeach=5) => {
+populateAlientPools = (types, numeach=10) => {
 	types.forEach(type => {
 		alienPools[type] = [];
 		alienPools.onCanvasCount[type] = 0;
@@ -298,11 +298,18 @@ populateExplosionPool = (num=10, img='explosion.png', life=10) => {
 }
 
 populatePowerupPool = () => {
+	let numMissiles = 10;
+	let numShield = 3;
+	let numBomb = 1;
 	for (p in Powerups) {
-		let cur = Object.assign({img: new Image()}, Powerups[p]);
-		cur.img.src = cur.src;
-		console.log(cur);
-		powerupPool.powerups.push(cur);
+		let maxNum = (p == "Missiles") ? numMissiles : (p == "Shield") ? numShield : numBomb;
+		let i = 0;
+		for (i = 0; i < maxNum; i++) {
+			let cur = Object.assign({img: new Image()}, Powerups[p]);
+			cur.img.src = cur.src;
+			console.log(p);
+			powerupPool.powerups.push(cur);
+		}
 	}
 }
 
