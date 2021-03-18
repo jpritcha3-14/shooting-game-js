@@ -10,7 +10,7 @@ var display;
 
 const root2 = Math.sqrt(2);
 const keys = new Set();
-["w", "a", "s", "d", "b", "r", " ", "shift"].forEach(item => keys.add(item));
+["w", "a", "s", "d", "f", "r", " ", "shift"].forEach(item => keys.add(item));
 
 // Only updated by key events
 var keyState = {
@@ -18,7 +18,7 @@ var keyState = {
 	a: false,
 	s: false,
 	d: false,
-	b: false,
+	f: false,
 	r: false,
 	" ": false,
 	"shift": false
@@ -438,7 +438,7 @@ updateMissiles = () => {
 
 updateBomb = () => {
 	// Initialize bomb
-	if (keyState.b && !bomb && ship.alive && ship.bombs > 0) {
+	if (keyState.f && !bomb && ship.alive && ship.bombs > 0) {
 		bomb = {
 			x: ship.x + Math.floor(ship.img.width / 2),
 			y: ship.y + Math.floor(ship.img.height / 2),
@@ -775,7 +775,6 @@ updateCanvas = () => {
 		drawGameOver(ctx);
 	}
 }
-
 
 window.onload = init;
 document.addEventListener("keydown", keyPressed);
