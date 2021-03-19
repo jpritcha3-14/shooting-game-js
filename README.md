@@ -1,4 +1,6 @@
 # Retro-Style Alien Shooting Game
+![title](https://raw.githubusercontent.com/jpritcha3-14/shooting-game-js/master/imgs/preview_title.png)
+![preview](https://raw.githubusercontent.com/jpritcha3-14/shooting-game-js/master/imgs/preview.png)
 
 ## Play
 Play the game [right here on GitHub Pages](https://jpritcha3-14.github.io/shooting-game-js/)
