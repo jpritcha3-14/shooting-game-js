@@ -2,11 +2,14 @@
 // Global Declarations //
 //~~~~~~~~~~~~~~~~~~~~~//
 
+var gameStart = false;
+var firstKeyPress = true;
 var canvas = {width: 0, height:0};
 var waveData; 
 var bomb;
 var ship;
 var display;
+
 
 const root2 = Math.sqrt(2);
 const keys = new Set();
@@ -160,7 +163,6 @@ populatePowerupPool = () => {
 		for (i = 0; i < maxNum; i++) {
 			let cur = Object.assign({img: new Image()}, Powerups[p]);
 			cur.img.src = cur.src;
-			console.log(p);
 			powerupPool.powerups.push(cur);
 		}
 	}
@@ -168,7 +170,7 @@ populatePowerupPool = () => {
 
 resetShip = () => {
 	ship.x = canvas.width / 2 - ship.img.width / 2;
-	ship.y = canvas.height - ship.img.height;
+	ship.y = canvas.height - 3 * ship.img.height;
 	ship.alive = true;
 	ship.missiles = 50;
 	ship.bombs = 1;
@@ -177,7 +179,10 @@ resetShip = () => {
 };
 
 initializeShip = () => {
-	ship = Object.assign(spriteFactory('imgs/ship.png'), {
+	ship = Object.assign({}, {
+		x: 0,
+		y: 0,
+		img: new Image(),
 		speed: 5, 
 		alive: true, 
 		missiles: 50, 
@@ -187,12 +192,13 @@ initializeShip = () => {
 			power: 20,
 			drain: 10,
 			drainTime: 10,
+			img: new Image()
 		}, 
 		score: 0 
 	});
-	ship.shield.img = new Image();
+	ship.img.onload = resetShip;
+	ship.img.src = 'imgs/ship.png';
 	ship.shield.img.src = 'imgs/ship_shield.png';
-	resetShip();
 };
 
 //~~~~~~~~~~~~~~~~~~~~//
@@ -400,6 +406,15 @@ drawShip = (ctx) => {
 	}
 }
 
+drawStartMessage = (ctx) => {
+	ctx.save();
+	ctx.font = 'bold 30px Courier New';
+	ctx.fillStyle = 'blue';
+	ctx.textAlign = 'center';
+	ctx.fillText('PRESS S TO START', canvas.width/2, canvas.height/2);
+	ctx.restore();
+}
+
 drawGameOver = (ctx) => {
 	ctx.font = 'bold 30px Courier New';
 	ctx.fillStyle = 'red';
@@ -487,7 +502,6 @@ updatePowerup = () => {
 			} else {
 				return;
 			}
-			console.log(powerupPool.active);
 			powerupPool.powerups[powerupPool.active].initialize();
 		}
 	} else {
@@ -500,6 +514,9 @@ updatePowerup = () => {
 }
 
 updateShip = () => {
+	if (firstKeyPress) {
+		return;
+	}
 	if (!ship.alive) {
 		if (keyState.r || keyState.c) { restart(); }
 		return;
@@ -709,8 +726,10 @@ updateDisplay = () => {
 
 keyPressed = (event) => {
 	if (keys.has(event.key.toLowerCase())) {
-		
 		keyState[event.key.toLowerCase()] = true;
+		if (firstKeyPress && gameStart && event.key.toLowerCase() != 's') {
+			firstKeyPress = false;
+		}
 	}
 	// Prevent space bar from scrolling page
 	if (event.keyCode == 32 && event.target == document.body) {
@@ -721,6 +740,9 @@ keyPressed = (event) => {
 keyReleased = (event) => {
 	if (keys.has(event.key.toLowerCase())) {
 		keyState[event.key.toLowerCase()] = false;
+	}
+	if (firstKeyPress && event.key.toLowerCase() == 's') {
+		firstKeyPress = false;
 	}
 }
 
@@ -767,6 +789,7 @@ init = () => {
 		score: document.getElementById('score')
 	};
 	initializeShip();
+	updateDisplay();
 	populateStars();
 	populateMissilePool();
 	populateExplosionPool();
@@ -793,6 +816,13 @@ updateState = () => {
 	window.setTimeout(updateState, 33);
 
 	updateStars();
+	if (!gameStart) { 
+		if (keyState.s) {
+			gameStart = true;
+		} else {
+			return;
+		}
+	};
 	updateMissiles();
 	updateBomb();
 	updateAliens();
@@ -810,6 +840,11 @@ updateCanvas = () => {
 	ctx.fillStyle = 'black';
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	drawStars(ctx);
+	if (!gameStart) {
+		drawShip(ctx);
+		drawStartMessage(ctx);
+		return;
+	}
 	drawMissiles(ctx);
 	drawBomb(ctx);
 	drawAliens(ctx);
