@@ -6,7 +6,7 @@
 Play the game [right here on GitHub Pages](https://jpritcha3-14.github.io/shooting-game-js/)
 
 ### Controls 
-- WASD: Move the ship
+- W A S D: Move the ship
 - Space: Fire a missile
 - Shift: Activate the ship's shield
 - F: Drop a bomb
